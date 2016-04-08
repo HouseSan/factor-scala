@@ -1,5 +1,5 @@
 //package factorScala.testing
 
-object Test {
-  
+object Test extends App{
+  println("wow")
 }
