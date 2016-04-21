@@ -80,7 +80,7 @@ def eval(tok : Token) :Unit = {
         case "rParen" =>
           parenCount -= 1
           if (parenCount == 0) {
-            val name = "lambda" + lambdaCount.toString
+            val name = lambdaCount.toString
             lambdaCount += 1
             val copy = ArrayBuffer[Token]()
             evalStack.slice(parenPos, evalStack.size).copyToBuffer(copy)
