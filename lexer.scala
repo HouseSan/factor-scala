@@ -12,6 +12,8 @@ case class basicOp(data: String) extends Token
 var going = true
 var evalStack = ArrayBuffer[Token]()
 var envStacks = Map[String,ArrayBuffer[Token]]()
+var valNames = Set[String]()
+var funNames = Set[String]()
 
 def makeToken(in : String): Token = {
   if (in.charAt(0).isDigit) {
@@ -54,6 +56,8 @@ def eval(tok : Token) :Unit = {
     case real(x)    => println("real " + x.toString); evalStack += real(x)
     case char(x)    => println("char " + x.toString); evalStack += char(x)
     case word(x)    => println("word " + x); evalStack += word(x)
+      if (valNames contains x) eval(coreOp("apply"))
+      else if (funNames contains x) { eval(coreOp("apply")); eval(coreOp("apply")) }
     case coreOp(x)  => println("coreOp " + x); {
       x match {
         case "apply" =>
@@ -79,8 +83,14 @@ def eval(tok : Token) :Unit = {
           evalStack.copyToBuffer(copy)
           envStacks += (name -> copy)
           evalStack.clear
-        //case "valCap" =>
-        //case "funCap" =>
+        case "valCap" =>
+          val a = evalStack.last match { case word(x) => x}
+          valNames += a
+          eval(coreOp("cap"))
+        case "funCap" =>
+          val a = evalStack.last match { case word(x) => x}
+          funNames += a
+          eval(coreOp("cap"))
         case "clear" =>
         case "empty" =>
           if (evalStack.isEmpty)
@@ -146,9 +156,6 @@ def eval(tok : Token) :Unit = {
     }
   }
 }
-
-envStacks += ("asdf" -> evalStack)
-val a = envStacks("asdf")
 
 while (going) {
   val input = readLine().split(" +");
