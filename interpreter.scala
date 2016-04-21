@@ -41,6 +41,7 @@ def makeToken(in : String): Token = {
       case "@"     => coreOp("apply")
       case "#"     => coreOp("copy")
       case "^"     => coreOp("cut")
+      case "<<"    => coreOp("insert")
       case "`"     => coreOp("show")
       case "_"     => coreOp("discard")
       case ";"     => coreOp("cap")
@@ -110,6 +111,12 @@ def eval(tok : Token) :Unit = {
             val n = evalStack.last match { case num(x) => x }
             evalStack.trimEnd(1)
             evalStack += evalStack.remove(evalStack.size - n - 1)
+          case "insert" =>
+            val n = evalStack.last match { case num(x) => x }
+            evalStack.trimEnd(1)
+            val a = evalStack.last
+            evalStack.trimEnd(1)
+            evalStack.insert(evalStack.size - n, a)
           case "show" =>
             println(evalStack.last)
           case "discard" =>
