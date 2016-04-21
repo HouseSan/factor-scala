@@ -35,7 +35,6 @@ def makeToken(in : String): Token = {
       case "clear" => coreOp("clear")
       case "empty" => coreOp("empty")
       case "="     => basicOp("equal")
-      case "!"     => basicOp("not")
       case ">"     => basicOp("greater")
       case "<"     => basicOp("less")
       case "+"     => basicOp("plus")
@@ -85,8 +84,55 @@ def eval(tok : Token) :Unit = {
     case stackOp(x) => println("stackOp " + x); {
 
     }
-    case basicOp(x) => println("basicOp " + x); {
-
+    case basicOp(x) => println("basicOp " + x); x match {
+      case "equal" =>
+        val a = evalStack.last
+        evalStack.trimEnd(1)
+        val b = evalStack.last
+        evalStack.trimEnd(1)
+        eval(if (a == b) word("true") else word("false"))
+      case "greater" =>
+        val a = evalStack.last match { case num(x) => x case real(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case num(x) => x case real(x) => x}
+        evalStack.trimEnd(1)
+        eval(if (a > b) word("true") else word("false"))
+      case "less" =>
+        val a = evalStack.last match { case num(x) => x case real(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case num(x) => x case real(x) => x}
+        evalStack.trimEnd(1)
+        eval(if (a < b) word("true") else word("false"))
+      case "plus" =>
+        val a = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        eval(makeToken((a+b).toString))
+      case "minus" =>
+        val a = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        eval(makeToken((a-b).toString))
+      case "times" =>
+        val a = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        eval(makeToken((a*b).toString))
+      case "divide" =>
+        val a = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        eval(makeToken((a/b).toString))
+      case "modulo" =>
+        val a = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        eval(makeToken((a%b).toString))
     }
   }
 }
