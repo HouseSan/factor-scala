@@ -1,4 +1,5 @@
 import scala.collection.mutable.ArrayBuffer
+import scala.io.Source._
 
 abstract class Token
 case class num(data: Int)        extends Token
@@ -19,6 +20,10 @@ var parenCount = 0
 var parenPos = 0
 var lambdaCount = 0
 
+def parse(in : String) {
+  in.split("\\s+").foreach( i => eval(makeToken(i)));
+}
+
 def makeToken(in : String): Token = {
   if (in.charAt(0).isDigit) {
     if (in contains ".")
@@ -32,6 +37,7 @@ def makeToken(in : String): Token = {
       case "("     => lambda("lParen")
       case ")"     => lambda("rParen")
       case "DONE"  => coreOp("DONE")
+      case "LOAD"  => coreOp("LOAD")
       case "@"     => coreOp("apply")
       case "#"     => coreOp("copy")
       case "^"     => coreOp("cut")
@@ -88,6 +94,10 @@ def eval(tok : Token) :Unit = {
         x match {
           case "DONE" =>
             done = true
+          case "LOAD" =>
+            val n = evalStack.last match { case word(x) => x }
+            evalStack.trimEnd(1)
+            fromFile(n).getLines.foreach(parse)
           case "apply" =>
             val name : String = evalStack.last match { case word(x) => x }
             evalStack.trimEnd(1)
@@ -196,6 +206,5 @@ def eval(tok : Token) :Unit = {
 }
 
 while (!done) {
-  val input = readLine().split(" +");
-  input.foreach{ i => eval(makeToken(i)) }
+  parse(readLine())
 }
