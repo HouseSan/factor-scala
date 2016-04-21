@@ -10,7 +10,7 @@ case class coreOp(data: String)  extends Token
 case class stackOp(data: String) extends Token
 case class basicOp(data: String) extends Token
 
-var going = true
+var done = false
 var evalStack = ArrayBuffer[Token]()
 var envStacks = Map[String,ArrayBuffer[Token]]()
 var valNames = Set[String]()
@@ -31,6 +31,7 @@ def makeToken(in : String): Token = {
     return in match {
       case "("     => lambda("lParen")
       case ")"     => lambda("rParen")
+      case "DONE"  => coreOp("DONE")
       case "@"     => coreOp("apply")
       case "#"     => coreOp("copy")
       case "^"     => coreOp("cut")
@@ -85,6 +86,8 @@ def eval(tok : Token) :Unit = {
     case coreOp(x)  => println("coreOp " + x);
       if (parenCount == 0) {
         x match {
+          case "DONE" =>
+            done = true
           case "apply" =>
             val name : String = evalStack.last match { case word(x) => x }
             evalStack.trimEnd(1)
@@ -192,8 +195,7 @@ def eval(tok : Token) :Unit = {
   }
 }
 
-while (going) {
+while (!done) {
   val input = readLine().split(" +");
   input.foreach{ i => eval(makeToken(i)) }
-  going = false
 }
