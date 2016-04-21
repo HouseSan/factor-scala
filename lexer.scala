@@ -81,8 +81,8 @@ def eval(tok : Token) :Unit = {
         case _       => println("????")
       }
     }
-    case stackOp(x) => println("stackOp " + x); {
-
+    case stackOp(x) => println("stackOp " + x); x match {
+        case _       => println("????")
     }
     case basicOp(x) => println("basicOp " + x); x match {
       case "equal" =>
@@ -133,6 +133,7 @@ def eval(tok : Token) :Unit = {
         val b = evalStack.last match { case real(x) => x case num(x) => x}
         evalStack.trimEnd(1)
         eval(makeToken((a%b).toString))
+      case _       => println("????")
     }
   }
 }
