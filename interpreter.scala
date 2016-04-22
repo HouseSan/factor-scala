@@ -26,7 +26,7 @@ var parenPos = 0
 var lambdaCount = 0
 
 def parse(in : String) {
-  in.split("\\s+").foreach( i => eval(makeToken(i)));
+  in.replaceAll("//.*$", "").split("\\s+").foreach( i => eval(makeToken(i)));
 }
 
 def makeToken(in : String): Token = {
