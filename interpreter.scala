@@ -31,6 +31,9 @@ class FiStack (ar : ArrayBuffer[Token]) {
     ar.trimEnd(1)
     return ret
   }
+  def pos(n:Int) : Int = {
+    return ar.size - n - 1
+  }
 }
 implicit def testing(s: ArrayBuffer[Token]) = new FiStack(s)
 
@@ -101,10 +104,10 @@ def compute(op : Operator) :Unit = {
         envStacks(name).foreach(eval)
       case "copy"    =>
         val n = evalStack.pop match { case num(x) => x }
-        evalStack += evalStack(evalStack.size - n - 1)
+        evalStack += evalStack(evalStack.pos(n))
       case "cut"     =>
         val n = evalStack.pop match { case num(x) => x }
-        evalStack += evalStack.remove(evalStack.size - n - 1)
+        evalStack += evalStack.remove(evalStack.pos(n))
       case "insert"  =>
         val n = evalStack.pop match { case num(x) => x }
         val a = evalStack.pop
@@ -127,13 +130,29 @@ def compute(op : Operator) :Unit = {
     }
 
     case stackOp(x) => x match {
-
       case "copy"    =>
-
+        val n = evalStack.pop match { case num(x) => x }
+        val name = evalStack.last match { case word(x) => x}
+        evalStack += envStacks(name)(envStacks(name).pos(n))
       case "cut"     =>
+        val n = evalStack.pop match { case num(x) => x }
+        val name = evalStack.last match { case word(x) => x}
+        evalStack += envStacks(name).remove(envStacks(name).pos(n))
       case "insert"  =>
+        val n = evalStack.pop match { case num(x) => x }
+        val a = evalStack.pop
+        val name = evalStack.last match { case word(x) => x}
+        envStacks(name).insert(envStacks(name).pos(n)+1, a)
       case "show"    =>
+        val name = evalStack.last match { case word(x) => x}
+        for ((k,v) <- envStacks) print(v + " ")
+        print('\n')
       case "discard" =>
+        val name = evalStack.pop match { case word(x) => x}
+        if (valNames contains name)
+          valNames -= name
+        if (funNames contains name)
+          funNames -= name
       case "equal"   =>
       case _         => println("????")
     }
