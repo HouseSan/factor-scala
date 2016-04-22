@@ -15,6 +15,7 @@ case class coreOp(data: String)  extends Operator
 case class stackOp(data: String) extends Operator
 case class basicOp(data: String) extends Operator
 
+var debug = false
 var done = false
 var evalStack = ArrayBuffer[Token]()
 var envStacks = Map[String,ArrayBuffer[Token]]()
@@ -43,6 +44,7 @@ def makeToken(in : String): Token = {
   return in match {
     case "("     => fiop(lambda("lParen"))
     case ")"     => fiop(lambda("rParen"))
+    case "DEBUG" => fiop(coreOp("DEBUG"))
     case "DONE"  => fiop(coreOp("DONE"))
     case "LOAD"  => fiop(coreOp("LOAD"))
     case "@"     => fiop(coreOp("apply"))
@@ -71,6 +73,8 @@ def makeToken(in : String): Token = {
 def compute(op : Operator) :Unit = {
   op match {
     case coreOp(x) => x match {
+      case "DEBUG" =>
+        debug = !debug
       case "DONE" =>
         done = true
       case "LOAD" =>
@@ -183,7 +187,8 @@ def compute(op : Operator) :Unit = {
 }
 
 def eval(tok : Token) :Unit = {
-  println(tok);
+  if (debug)
+    println(tok);
   tok match {
     case num(x)     => evalStack += num(x)
     case real(x)    => evalStack += real(x)
