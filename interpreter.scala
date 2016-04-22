@@ -25,6 +25,15 @@ var parenCount = 0
 var parenPos = 0
 var lambdaCount = 0
 
+class FiStack (ar : ArrayBuffer[Token]) {
+  def pop() : Token = {
+    val ret = ar.last
+    ar.trimEnd(1)
+    return ret
+  }
+}
+implicit def testing(s: ArrayBuffer[Token]) = new FiStack(s)
+
 def parse(in : String) {
   in.replaceAll("//.*$", "").split("\\s+").foreach( i => eval(makeToken(i)));
 }
@@ -134,52 +143,36 @@ def compute(op : Operator) :Unit = {
 
     case basicOp(x) => x match {
       case "equal" =>
-        val a = evalStack.last
-        evalStack.trimEnd(1)
-        val b = evalStack.last
-        evalStack.trimEnd(1)
+        val a = evalStack.pop
+        val b = evalStack.pop
         eval(if (a == b) word("true") else word("false"))
       case "greater" =>
-        val a = evalStack.last match { case num(x) => x case real(x) => x}
-        evalStack.trimEnd(1)
-        val b = evalStack.last match { case num(x) => x case real(x) => x}
-        evalStack.trimEnd(1)
+        val a = evalStack.pop match { case real(x) => x case num(x) => x}
+        val b = evalStack.pop match { case real(x) => x case num(x) => x}
         eval(if (a > b) word("true") else word("false"))
       case "less" =>
-        val a = evalStack.last match { case num(x) => x case real(x) => x}
-        evalStack.trimEnd(1)
-        val b = evalStack.last match { case num(x) => x case real(x) => x}
-        evalStack.trimEnd(1)
+        val a = evalStack.pop match { case real(x) => x case num(x) => x}
+        val b = evalStack.pop match { case real(x) => x case num(x) => x}
         eval(if (a < b) word("true") else word("false"))
       case "plus" =>
-        val a = evalStack.last match { case real(x) => x case num(x) => x}
-        evalStack.trimEnd(1)
-        val b = evalStack.last match { case real(x) => x case num(x) => x}
-        evalStack.trimEnd(1)
+        val a = evalStack.pop match { case real(x) => x case num(x) => x}
+        val b = evalStack.pop match { case real(x) => x case num(x) => x}
         eval(makeToken((a+b).toString))
       case "minus" =>
-        val a = evalStack.last match { case real(x) => x case num(x) => x}
-        evalStack.trimEnd(1)
-        val b = evalStack.last match { case real(x) => x case num(x) => x}
-        evalStack.trimEnd(1)
+        val a = evalStack.pop match { case real(x) => x case num(x) => x}
+        val b = evalStack.pop match { case real(x) => x case num(x) => x}
         eval(makeToken((a-b).toString))
       case "times" =>
-        val a = evalStack.last match { case real(x) => x case num(x) => x}
-        evalStack.trimEnd(1)
-        val b = evalStack.last match { case real(x) => x case num(x) => x}
-        evalStack.trimEnd(1)
+        val a = evalStack.pop match { case real(x) => x case num(x) => x}
+        val b = evalStack.pop match { case real(x) => x case num(x) => x}
         eval(makeToken((a*b).toString))
       case "divide" =>
-        val a = evalStack.last match { case real(x) => x case num(x) => x}
-        evalStack.trimEnd(1)
-        val b = evalStack.last match { case real(x) => x case num(x) => x}
-        evalStack.trimEnd(1)
+        val a = evalStack.pop match { case real(x) => x case num(x) => x}
+        val b = evalStack.pop match { case real(x) => x case num(x) => x}
         eval(makeToken((a/b).toString))
       case "modulo" =>
-        val a = evalStack.last match { case real(x) => x case num(x) => x}
-        evalStack.trimEnd(1)
-        val b = evalStack.last match { case real(x) => x case num(x) => x}
-        evalStack.trimEnd(1)
+        val a = evalStack.pop match { case real(x) => x case num(x) => x}
+        val b = evalStack.pop match { case real(x) => x case num(x) => x}
         eval(makeToken((a%b).toString))
       case _       => println("????")
     }
