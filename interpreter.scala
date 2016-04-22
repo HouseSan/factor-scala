@@ -224,5 +224,9 @@ def eval(tok : Token) :Unit = {
 }
 
 while (!done) {
-  parse(readLine())
+  print("| ")
+  evalStack.foreach( i => print(i + " "))
+  print('\n')
+
+  parse(readLine(": "))
 }
