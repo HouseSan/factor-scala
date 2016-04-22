@@ -67,6 +67,14 @@ def makeToken(in : String): Token = {
     case ";fun"  => fiop(coreOp("funCap"))
     case "clear" => fiop(coreOp("clear"))
     case "empty" => fiop(coreOp("empty"))
+
+    case "$#"    => fiop(stackOp("copy"))
+    case "$^"    => fiop(stackOp("cut"))
+    case "$~"    => fiop(stackOp("insert"))
+    case "$`"    => fiop(stackOp("show"))
+    case "$_"    => fiop(stackOp("discard"))
+    case "$="    => fiop(stackOp("equal"))
+
     case "="     => fiop(basicOp("equal"))
     case ">"     => fiop(basicOp("greater"))
     case "<"     => fiop(basicOp("less"))
@@ -82,63 +90,52 @@ def makeToken(in : String): Token = {
 def compute(op : Operator) :Unit = {
   op match {
     case coreOp(x) => x match {
-      case "DEBUG" =>
-        debug = !debug
-      case "DONE" =>
-        done = true
-      case "LOAD" =>
-        val n = evalStack.last match { case word(x) => x }
-        evalStack.trimEnd(1)
+
+      case "DEBUG"   => debug = !debug
+      case "DONE"    => done = true
+      case "LOAD"    =>
+        val n = evalStack.pop match { case word(x) => x }
         fromFile(n).getLines.foreach(parse)
-      case "apply" =>
-        val name : String = evalStack.last match { case word(x) => x }
-        evalStack.trimEnd(1)
+      case "apply"   =>
+        val name: String = evalStack.pop match { case word(x) => x }
         envStacks(name).foreach(eval)
-      case "copy" =>
-        val n = evalStack.last match { case num(x) => x }
-        evalStack.trimEnd(1)
+      case "copy"    =>
+        val n = evalStack.pop match { case num(x) => x }
         evalStack += evalStack(evalStack.size - n - 1)
-      case "cut" =>
-        val n = evalStack.last match { case num(x) => x }
-        evalStack.trimEnd(1)
+      case "cut"     =>
+        val n = evalStack.pop match { case num(x) => x }
         evalStack += evalStack.remove(evalStack.size - n - 1)
-      case "insert" =>
-        val n = evalStack.last match { case num(x) => x }
-        evalStack.trimEnd(1)
-        val a = evalStack.last
-        evalStack.trimEnd(1)
+      case "insert"  =>
+        val n = evalStack.pop match { case num(x) => x }
+        val a = evalStack.pop
         evalStack.insert(evalStack.size - n, a)
-      case "show" =>
-        println(evalStack.last)
-      case "discard" =>
-        evalStack.trimEnd(1)
-      case "cap" =>
-        val name = evalStack.last match { case word(x) => x }
-        evalStack.trimEnd(1)
+      case "show"    => println(evalStack.last)
+      case "discard" => evalStack.pop
+      case "cap"     =>
+        val name = evalStack.pop match { case word(x) => x }
         val copy = ArrayBuffer[Token]()
         evalStack.copyToBuffer(copy)
         envStacks += (name -> copy)
         evalStack.clear
-      case "valCap" =>
-        val a = evalStack.last match { case word(x) => x}
-        valNames += a
+      case "valCap"  => valNames += (evalStack.last match { case word(x) => x})
         eval(fiop(coreOp("cap")))
-      case "funCap" =>
-        val a = evalStack.last match { case word(x) => x}
-        funNames += a
+      case "funCap"  => funNames += (evalStack.last match { case word(x) => x})
         eval(fiop(coreOp("cap")))
-      case "clear" =>
-      case "empty" =>
-        if (evalStack.isEmpty)
-          eval(word("true"))
-        else
-          eval(word("false"))
-      case _       =>
-        println("????")
+      case "clear"   => evalStack.clear
+      case "empty"   => eval(word(if (evalStack.isEmpty) "true" else "false"))
+      case _         => println("????")
     }
 
     case stackOp(x) => x match {
-      case _       => println("????")
+
+      case "copy"    =>
+
+      case "cut"     =>
+      case "insert"  =>
+      case "show"    =>
+      case "discard" =>
+      case "equal"   =>
+      case _         => println("????")
     }
 
     case basicOp(x) => x match {
