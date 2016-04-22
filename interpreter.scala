@@ -5,6 +5,7 @@ abstract class Token
 case class num(data: Int)        extends Token
 case class real(data: Double)    extends Token
 case class char(data: Char)      extends Token
+case class escword(data: String) extends Token
 case class word(data: String)    extends Token
 case class fiop(data: Operator)  extends Token
 
@@ -37,6 +38,8 @@ def makeToken(in : String): Token = {
   else if (in.charAt(0) == ''') {
     return char(in.charAt(1))
   }
+  else if (in.charAt(0) == '\\')
+    return escword(in.slice(1, in.size))
   return in match {
     case "("     => fiop(lambda("lParen"))
     case ")"     => fiop(lambda("rParen"))
@@ -185,6 +188,7 @@ def eval(tok : Token) :Unit = {
     case num(x)     => evalStack += num(x)
     case real(x)    => evalStack += real(x)
     case char(x)    => evalStack += char(x)
+    case escword(x) => evalStack += word(x)
     case word(x)    => evalStack += word(x)
       if (valNames contains x) eval(fiop(coreOp("apply")))
       else if (funNames contains x) { eval(fiop(coreOp("apply"))); eval(fiop(coreOp("apply"))) }
