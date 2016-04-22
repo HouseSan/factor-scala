@@ -30,9 +30,11 @@ def makeToken(in : String): Token = {
       return real(in.toDouble)
     else
       return num(in.toInt)
-  } else if (in.charAt(0) == ''') {
+  }
+  else if (in.charAt(0) == ''') {
     return char(in.charAt(1))
-  } else {
+  }
+  else {
     return in match {
       case "("     => lambda("lParen")
       case ")"     => lambda("rParen")
@@ -62,17 +64,131 @@ def makeToken(in : String): Token = {
   }
 }
 
-def eval(tok : Token) :Unit = {
+def compute(tok : Token) :Unit = {
   tok match {
-    case num(x)     => println("number " + x.toString); evalStack += num(x)
-    case real(x)    => println("real " + x.toString); evalStack += real(x)
-    case char(x)    => println("char " + x.toString); evalStack += char(x)
-    case word(x)    => println("word " + x); evalStack += word(x)
+    case coreOp(x) => x match {
+      case "DONE" =>
+        done = true
+      case "LOAD" =>
+        val n = evalStack.last match { case word(x) => x }
+        evalStack.trimEnd(1)
+        fromFile(n).getLines.foreach(parse)
+      case "apply" =>
+        val name : String = evalStack.last match { case word(x) => x }
+        evalStack.trimEnd(1)
+        envStacks(name).foreach(eval)
+      case "copy" =>
+        val n = evalStack.last match { case num(x) => x }
+        evalStack.trimEnd(1)
+        evalStack += evalStack(evalStack.size - n - 1)
+      case "cut" =>
+        val n = evalStack.last match { case num(x) => x }
+        evalStack.trimEnd(1)
+        evalStack += evalStack.remove(evalStack.size - n - 1)
+      case "insert" =>
+        val n = evalStack.last match { case num(x) => x }
+        evalStack.trimEnd(1)
+        val a = evalStack.last
+        evalStack.trimEnd(1)
+        evalStack.insert(evalStack.size - n, a)
+      case "show" =>
+        println(evalStack.last)
+      case "discard" =>
+        evalStack.trimEnd(1)
+      case "cap" =>
+        val name = evalStack.last match { case word(x) => x }
+        evalStack.trimEnd(1)
+        val copy = ArrayBuffer[Token]()
+        evalStack.copyToBuffer(copy)
+        envStacks += (name -> copy)
+        evalStack.clear
+      case "valCap" =>
+        val a = evalStack.last match { case word(x) => x}
+        valNames += a
+        eval(coreOp("cap"))
+      case "funCap" =>
+        val a = evalStack.last match { case word(x) => x}
+        funNames += a
+        eval(coreOp("cap"))
+      case "clear" =>
+      case "empty" =>
+        if (evalStack.isEmpty)
+          eval(word("true"))
+        else
+          eval(word("false"))
+      case _       =>
+        println("????")
+    }
+
+    case stackOp(x) => x match {
+      case _       => println("????")
+    }
+
+    case basicOp(x) => x match {
+      case "equal" =>
+        val a = evalStack.last
+        evalStack.trimEnd(1)
+        val b = evalStack.last
+        evalStack.trimEnd(1)
+        eval(if (a == b) word("true") else word("false"))
+      case "greater" =>
+        val a = evalStack.last match { case num(x) => x case real(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case num(x) => x case real(x) => x}
+        evalStack.trimEnd(1)
+        eval(if (a > b) word("true") else word("false"))
+      case "less" =>
+        val a = evalStack.last match { case num(x) => x case real(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case num(x) => x case real(x) => x}
+        evalStack.trimEnd(1)
+        eval(if (a < b) word("true") else word("false"))
+      case "plus" =>
+        val a = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        eval(makeToken((a+b).toString))
+      case "minus" =>
+        val a = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        eval(makeToken((a-b).toString))
+      case "times" =>
+        val a = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        eval(makeToken((a*b).toString))
+      case "divide" =>
+        val a = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        eval(makeToken((a/b).toString))
+      case "modulo" =>
+        val a = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        val b = evalStack.last match { case real(x) => x case num(x) => x}
+        evalStack.trimEnd(1)
+        eval(makeToken((a%b).toString))
+      case _       => println("????")
+    }
+  }
+}
+
+def eval(tok : Token) :Unit = {
+  println(tok);
+  tok match {
+    case num(x)     => evalStack += num(x)
+    case real(x)    => evalStack += real(x)
+    case char(x)    => evalStack += char(x)
+    case word(x)    => evalStack += word(x)
       if (valNames contains x) eval(coreOp("apply"))
       else if (funNames contains x) { eval(coreOp("apply")); eval(coreOp("apply")) }
 
     case lambda(x)  =>
-      println("lambda " + x);
       x match {
         case "lParen" =>
           if (parenCount == 0) parenPos = evalStack.size
@@ -89,126 +205,11 @@ def eval(tok : Token) :Unit = {
             eval(word(name))
           }
       }
-
-    case coreOp(x)  => println("coreOp " + x);
-      if (parenCount == 0) {
-        x match {
-          case "DONE" =>
-            done = true
-          case "LOAD" =>
-            val n = evalStack.last match { case word(x) => x }
-            evalStack.trimEnd(1)
-            fromFile(n).getLines.foreach(parse)
-          case "apply" =>
-            val name : String = evalStack.last match { case word(x) => x }
-            evalStack.trimEnd(1)
-            envStacks(name).foreach(eval)
-          case "copy" =>
-            val n = evalStack.last match { case num(x) => x }
-            evalStack.trimEnd(1)
-            evalStack += evalStack(evalStack.size - n - 1)
-          case "cut" =>
-            val n = evalStack.last match { case num(x) => x }
-            evalStack.trimEnd(1)
-            evalStack += evalStack.remove(evalStack.size - n - 1)
-          case "insert" =>
-            val n = evalStack.last match { case num(x) => x }
-            evalStack.trimEnd(1)
-            val a = evalStack.last
-            evalStack.trimEnd(1)
-            evalStack.insert(evalStack.size - n, a)
-          case "show" =>
-            println(evalStack.last)
-          case "discard" =>
-            evalStack.trimEnd(1)
-          case "cap" =>
-            val name = evalStack.last match { case word(x) => x }
-            evalStack.trimEnd(1)
-            val copy = ArrayBuffer[Token]()
-            evalStack.copyToBuffer(copy)
-            envStacks += (name -> copy)
-            evalStack.clear
-          case "valCap" =>
-            val a = evalStack.last match { case word(x) => x}
-            valNames += a
-            eval(coreOp("cap"))
-          case "funCap" =>
-            val a = evalStack.last match { case word(x) => x}
-            funNames += a
-            eval(coreOp("cap"))
-          case "clear" =>
-          case "empty" =>
-            if (evalStack.isEmpty)
-              eval(word("true"))
-            else
-              eval(word("false"))
-          case _       =>
-            println("????")
-        }
-      } else evalStack += coreOp(x)
-
-    case stackOp(x) => println("stackOp " + x)
-      if (parenCount == 0) {
-        x match {
-          case _       => println("????")
-        }
-      } else evalStack += stackOp(x)
-
-    case basicOp(x) =>
-      println("basicOp " + x)
-      if (parenCount == 0) {
-        x match {
-          case "equal" =>
-            val a = evalStack.last
-            evalStack.trimEnd(1)
-            val b = evalStack.last
-            evalStack.trimEnd(1)
-            eval(if (a == b) word("true") else word("false"))
-          case "greater" =>
-            val a = evalStack.last match { case num(x) => x case real(x) => x}
-            evalStack.trimEnd(1)
-            val b = evalStack.last match { case num(x) => x case real(x) => x}
-            evalStack.trimEnd(1)
-            eval(if (a > b) word("true") else word("false"))
-          case "less" =>
-            val a = evalStack.last match { case num(x) => x case real(x) => x}
-            evalStack.trimEnd(1)
-            val b = evalStack.last match { case num(x) => x case real(x) => x}
-            evalStack.trimEnd(1)
-            eval(if (a < b) word("true") else word("false"))
-          case "plus" =>
-            val a = evalStack.last match { case real(x) => x case num(x) => x}
-            evalStack.trimEnd(1)
-            val b = evalStack.last match { case real(x) => x case num(x) => x}
-            evalStack.trimEnd(1)
-            eval(makeToken((a+b).toString))
-          case "minus" =>
-            val a = evalStack.last match { case real(x) => x case num(x) => x}
-            evalStack.trimEnd(1)
-            val b = evalStack.last match { case real(x) => x case num(x) => x}
-            evalStack.trimEnd(1)
-            eval(makeToken((a-b).toString))
-          case "times" =>
-            val a = evalStack.last match { case real(x) => x case num(x) => x}
-            evalStack.trimEnd(1)
-            val b = evalStack.last match { case real(x) => x case num(x) => x}
-            evalStack.trimEnd(1)
-            eval(makeToken((a*b).toString))
-          case "divide" =>
-            val a = evalStack.last match { case real(x) => x case num(x) => x}
-            evalStack.trimEnd(1)
-            val b = evalStack.last match { case real(x) => x case num(x) => x}
-            evalStack.trimEnd(1)
-            eval(makeToken((a/b).toString))
-          case "modulo" =>
-            val a = evalStack.last match { case real(x) => x case num(x) => x}
-            evalStack.trimEnd(1)
-            val b = evalStack.last match { case real(x) => x case num(x) => x}
-            evalStack.trimEnd(1)
-            eval(makeToken((a%b).toString))
-          case _       => println("????")
-        }
-      } else evalStack += basicOp(x)
+    case _ => //matching multiple parameterized case classes (coreOp(x) | basicOp(x) | stackOp(x)) isn't allowed
+      if (parenCount == 0)
+        compute(tok)
+      else
+        evalStack += tok
   }
 }
 
