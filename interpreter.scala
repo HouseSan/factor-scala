@@ -38,7 +38,21 @@ class FiStack (ar : ArrayBuffer[Token]) {
 implicit def testing(s: ArrayBuffer[Token]) = new FiStack(s)
 
 def parse(in : String) {
-  in.replaceAll("//.*$", "").split("\\s+").foreach( i => eval(makeToken(i)));
+  in.replaceAll("//.*$", "").split("\\s+").filter(_ != "").foreach( i => eval(makeToken(i)));
+}
+
+def toString(tok : Token) : String = {
+  return tok match {
+    case num(x) => x.toString
+    case real(x) => x.toString
+    case char(x) => x.toString
+    case escword(x) => x.toString
+    case word(x) => x.toString
+    case fiop(lambda(x)) => x.toString
+    case fiop(coreOp(x)) => x.toString
+    case fiop(stackOp(x)) => x.toString
+    case fiop(basicOp(x)) => x.toString
+  }
 }
 
 def makeToken(in : String): Token = {
@@ -92,8 +106,8 @@ def makeToken(in : String): Token = {
 
 def compute(op : Operator) :Unit = {
   op match {
-    case coreOp(x) => x match {
 
+    case coreOp(x) => x match {
       case "DEBUG"   => debug = !debug
       case "DONE"    => done = true
       case "LOAD"    =>
@@ -145,7 +159,7 @@ def compute(op : Operator) :Unit = {
         envStacks(name).insert(envStacks(name).pos(n)+1, a)
       case "show"    =>
         val name = evalStack.last match { case word(x) => x}
-        for ((k,v) <- envStacks) print(v + " ")
+        envStacks(name).foreach( i => print(toString(i) + " ") )
         print('\n')
       case "discard" =>
         val name = evalStack.pop match { case word(x) => x}
