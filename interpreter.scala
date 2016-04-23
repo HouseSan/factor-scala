@@ -63,10 +63,20 @@ def makeToken(in : String): Token = {
       return num(in.toInt)
   }
   else if (in.charAt(0) == ''') {
-    return char(in.charAt(1))
+    if (in.charAt(1) != '\\')
+      return char(in.charAt(1))
+    else
+      return char (in.charAt(2) match {
+        case 't' => '\t'
+        case 'n' => '\n'
+        case '0' => '\0'
+        case 'x' => Integer.parseInt(in.slice(3, in.size), 16).toChar
+        case _   => ' '
+      })
   }
   else if (in.charAt(0) == '\\')
     return escword(in.slice(1, in.size))
+
   return in match {
     case "("     => fiop(lambda("lParen"))
     case ")"     => fiop(lambda("rParen"))
@@ -248,7 +258,7 @@ def eval(tok : Token) :Unit = {
 
 while (!done) {
   print("| ")
-  evalStack.foreach( i => print(i + " "))
+  evalStack.foreach( i => print(toString(i) + " "))
   print('\n')
 
   parse(readLine(": "))
