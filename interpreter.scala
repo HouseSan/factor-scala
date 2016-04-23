@@ -228,13 +228,16 @@ def eval(tok : Token) :Unit = {
     case char(x)    => evalStack += char(x)
     case escword(x) => evalStack += word(x)
     case word(x)    => evalStack += word(x)
-      if (valNames contains x) eval(fiop(coreOp("apply")))
-      else if (funNames contains x) { eval(fiop(coreOp("apply"))); eval(fiop(coreOp("apply"))) }
+      if (parenCount == 0) {
+        if (valNames contains x) eval(fiop(coreOp("apply")))
+        else if (funNames contains x) { eval(fiop(coreOp("apply"))); eval(fiop(coreOp("apply"))) }
+      }
 
     case fiop(lambda(x))  =>
       x match {
         case "lParen" =>
           if (parenCount == 0) parenPos = evalStack.size
+          else evalStack += tok
           parenCount += 1
         case "rParen" =>
           parenCount -= 1
@@ -247,6 +250,7 @@ def eval(tok : Token) :Unit = {
             envStacks += (name -> copy)
             eval(word(name))
           }
+          else evalStack += tok
       }
     case fiop(x) =>
       if (parenCount == 0)
