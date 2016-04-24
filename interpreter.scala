@@ -38,7 +38,8 @@ class FiStack (ar : ArrayBuffer[Token]) {
 implicit def testing(s: ArrayBuffer[Token]) = new FiStack(s)
 
 def parse(in : String) {
-  in.replaceAll("//.*$", "").split("\\s+").filter(_ != "").foreach( i => eval(makeToken(i)));
+  if (!in.isEmpty)
+    in.replaceAll("//.*$", "").split("\\s+").filter(_ != "").foreach( i => eval(makeToken(i)));
 }
 
 def toString(tok : Token) : String = {
@@ -260,10 +261,14 @@ def eval(tok : Token) :Unit = {
   }
 }
 
-while (!done) {
-  print("| ")
-  evalStack.foreach( i => print(toString(i) + " "))
-  print('\n')
+def main = {
+  while (!done) {
+    print("| ")
+    evalStack.foreach( i => print(i + " "))
+    print('\n')
 
-  parse(readLine(": "))
+    parse(readLine(": "))
+  }
 }
+
+main
