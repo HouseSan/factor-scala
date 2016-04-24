@@ -1,0 +1,6 @@
+( _ ) false ;val
+( 1 ^ _ ) true ;val
+( false = ) not ;fun
+( ( _ false ) ( ) 2 ^ @ @ ) and ;fun
+( ( ) ( _ true ) 2 ^ @ @ ) or ;fun
+( ( ) ( not ) 2 ^ @ @ ) xor ;fun
