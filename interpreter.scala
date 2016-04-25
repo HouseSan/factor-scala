@@ -89,16 +89,14 @@ val wordOpsMap = LinkedHashMap[String, Token](
   "empty" -> fiop(coreOp("empty"))
 )
 
-
 val wSpaceR = Lexic("""(\s+)(.*)""".r, {_ => None})
 val realR = Lexic("""(-?\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
 val intR = Lexic("""(-?\d+)(.*)""".r, {x => Some(num(x.toInt))})
 val wordR = Lexic("""(\w+)(.*)""".r, {x => Some(wordOpsMap.getOrElse(x, word(x)))})
+val escwordR = Lexic( """\\(\w+)(.*)""".r, {x => Some(escword(x))})
 
-
-//  val lParenR = Lexic(
-//val tempLexicList = List(wSpaceR, realR, intR, wordR)
-val lexicList = List(wSpaceR, realR, intR, wordR) ++ basicOpsMap.map({case (s, op) => Lexic(s"(${Regex.quote(s)})(.*)".r, {_ => Some(fiop(op))} )})
+val lexicList = List(wSpaceR, realR, intR, wordR, escwordR) ++
+  basicOpsMap.map({case (s, op) => Lexic(s"(${Regex.quote(s)})(.*)".r, {_ => Some(fiop(op))} )})
 
 var debug = false
 var done = false
@@ -143,15 +141,12 @@ def makeToken(in : String): (Option[Token], String) = {
       case None =>
     }
   }
+  // No regex matched the input string
   throw new IllegalArgumentException(in)
   return (None, "")
+}
 
-/*  if (in.charAt(0).isDigit || (in.charAt(0) == '-' && in.length > 1)) {
-    return {
-      if (in contains ".") real(in.toDouble)
-      else num(in.toInt)
-    }
-  }
+/*
   else if (in.charAt(0) == ''') {
     if (in.charAt(1) != '\\')
       return char(in.charAt(1))
@@ -170,7 +165,6 @@ def makeToken(in : String): (Option[Token], String) = {
     return fiop(allOps(in))
   return word(in)
 */
-}
 
 def compute(op : Operator) :Unit = {
   op match {
