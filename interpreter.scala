@@ -15,6 +15,40 @@ case class coreOp(data: String)  extends Operator
 case class stackOp(data: String) extends Operator
 case class basicOp(data: String) extends Operator
 
+val allOps = Map[String, Operator](
+  "("     -> lambda("lParen"),
+  ")"     -> lambda("rParen"),
+  "DEBUG" -> coreOp("DEBUG"),
+  "DONE"  -> coreOp("DONE"),
+  "LOAD"  -> coreOp("LOAD"),
+  "@"     -> coreOp("apply"),
+  "#"     -> coreOp("copy"),
+  "^"     -> coreOp("cut"),
+  "~"     -> coreOp("insert"),
+  "`"     -> coreOp("show"),
+  "_"     -> coreOp("discard"),
+  ";"     -> coreOp("cap"),
+  ";val"  -> coreOp("valCap"),
+  ";fun"  -> coreOp("funCap"),
+  "clear" -> coreOp("clear"),
+  "empty" -> coreOp("empty"),
+  "$#"    -> stackOp("copy"),
+  "$^"    -> stackOp("cut"),
+  "$~"    -> stackOp("insert"),
+  "$`"    -> stackOp("show"),
+  "$_"    -> stackOp("discard"),
+  "$="    -> stackOp("equal"),
+  "="     -> basicOp("equal"),
+  ">"     -> basicOp("greater"),
+  "<"     -> basicOp("less"),
+  "+"     -> basicOp("plus"),
+  "-"     -> basicOp("minus"),
+  "*"     -> basicOp("times"),
+  "/"     -> basicOp("divide"),
+  "%"     -> basicOp("modulo")
+)
+val revAllOps = allOps.map(_.swap)
+
 var debug = false
 var done = false
 var evalStack = ArrayBuffer[Token]()
@@ -49,19 +83,16 @@ def toString(tok : Token) : String = {
     case char(x) => x.toString
     case escword(x) => "\\" + x.toString
     case word(x) => "\\" + x.toString
-    case fiop(lambda(x)) => x.toString
-    case fiop(coreOp(x)) => x.toString
-    case fiop(stackOp(x)) => x.toString
-    case fiop(basicOp(x)) => x.toString
+    case fiop(x) => revAllOps(x)
   }
 }
 
 def makeToken(in : String): Token = {
-  if (in.charAt(0).isDigit) {
-    if (in contains ".")
-      return real(in.toDouble)
-    else
-      return num(in.toInt)
+  if (in.charAt(0).isDigit || (in.charAt(0) == '-' && in.length > 1)) {
+    return {
+      if (in contains ".") real(in.toDouble)
+      else num(in.toInt)
+    }
   }
   else if (in.charAt(0) == ''') {
     if (in.charAt(1) != '\\')
@@ -77,47 +108,13 @@ def makeToken(in : String): Token = {
   }
   else if (in.charAt(0) == '\\')
     return escword(in.slice(1, in.size))
-
-  return in match {
-    case "("     => fiop(lambda("lParen"))
-    case ")"     => fiop(lambda("rParen"))
-    case "DEBUG" => fiop(coreOp("DEBUG"))
-    case "DONE"  => fiop(coreOp("DONE"))
-    case "LOAD"  => fiop(coreOp("LOAD"))
-    case "@"     => fiop(coreOp("apply"))
-    case "#"     => fiop(coreOp("copy"))
-    case "^"     => fiop(coreOp("cut"))
-    case "~"     => fiop(coreOp("insert"))
-    case "`"     => fiop(coreOp("show"))
-    case "_"     => fiop(coreOp("discard"))
-    case ";"     => fiop(coreOp("cap"))
-    case ";val"  => fiop(coreOp("valCap"))
-    case ";fun"  => fiop(coreOp("funCap"))
-    case "clear" => fiop(coreOp("clear"))
-    case "empty" => fiop(coreOp("empty"))
-
-    case "$#"    => fiop(stackOp("copy"))
-    case "$^"    => fiop(stackOp("cut"))
-    case "$~"    => fiop(stackOp("insert"))
-    case "$`"    => fiop(stackOp("show"))
-    case "$_"    => fiop(stackOp("discard"))
-    case "$="    => fiop(stackOp("equal"))
-
-    case "="     => fiop(basicOp("equal"))
-    case ">"     => fiop(basicOp("greater"))
-    case "<"     => fiop(basicOp("less"))
-    case "+"     => fiop(basicOp("plus"))
-    case "-"     => fiop(basicOp("minus"))
-    case "*"     => fiop(basicOp("times"))
-    case "/"     => fiop(basicOp("divide"))
-    case "%"     => fiop(basicOp("modulo"))
-    case _       => word(in)
-  }
+  else if (allOps contains in)
+    return fiop(allOps(in))
+  return word(in)
 }
 
 def compute(op : Operator) :Unit = {
   op match {
-
     case coreOp(x) => x match {
       case "DEBUG"   => debug = !debug
       case "DONE"    => done = true
@@ -137,7 +134,7 @@ def compute(op : Operator) :Unit = {
         val n = evalStack.pop match { case num(x) => x }
         val a = evalStack.pop
         evalStack.insert(evalStack.size - n, a)
-      case "show"    => println(evalStack.last)
+      case "show"    => print(toString(evalStack.last))
       case "discard" => evalStack.pop
       case "cap"     =>
         val name = evalStack.pop match { case word(x) => x }
@@ -264,7 +261,7 @@ def eval(tok : Token) :Unit = {
 def main = {
   while (!done) {
     print("| ")
-    evalStack.foreach( i => print(i + " "))
+    evalStack.foreach( i => print(toString(i) + " "))
     print('\n')
 
     parse(readLine(": "))
