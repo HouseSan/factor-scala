@@ -47,6 +47,7 @@ val allOps = Map[String, Operator](
   "/"     -> basicOp("divide"),
   "%"     -> basicOp("modulo")
 )
+val revAllOps = allOps.map(_.swap)
 
 var debug = false
 var done = false
@@ -82,10 +83,7 @@ def toString(tok : Token) : String = {
     case char(x) => x.toString
     case escword(x) => "\\" + x.toString
     case word(x) => "\\" + x.toString
-    case fiop(lambda(x)) => x.toString
-    case fiop(coreOp(x)) => x.toString
-    case fiop(stackOp(x)) => x.toString
-    case fiop(basicOp(x)) => x.toString
+    case fiop(x) => revAllOps(x)
   }
 }
 
@@ -136,7 +134,7 @@ def compute(op : Operator) :Unit = {
         val n = evalStack.pop match { case num(x) => x }
         val a = evalStack.pop
         evalStack.insert(evalStack.size - n, a)
-      case "show"    => println(evalStack.last)
+      case "show"    => print(toString(evalStack.last))
       case "discard" => evalStack.pop
       case "cap"     =>
         val name = evalStack.pop match { case word(x) => x }
@@ -263,7 +261,7 @@ def eval(tok : Token) :Unit = {
 def main = {
   while (!done) {
     print("| ")
-    evalStack.foreach( i => print(i + " "))
+    evalStack.foreach( i => print(toString(i) + " "))
     print('\n')
 
     parse(readLine(": "))
