@@ -4,12 +4,12 @@ import scala.util.matching.Regex
 import java.lang.IllegalArgumentException
 
 abstract class Token
-case class num(data: Int)        extends Token
-case class real(data: Double)    extends Token
-case class char(data: Char)      extends Token
-case class escword(data: String) extends Token
-case class word(data: String)    extends Token
-case class fiop(data: Operator)  extends Token
+case class num(data: Int)        extends Token { override def toString = data.toString }
+case class real(data: Double)    extends Token { override def toString = data.toString }
+case class char(data: Char)      extends Token { override def toString = data.toString }
+case class escword(data: String) extends Token { override def toString = "\\" + data.toString }
+case class word(data: String)    extends Token { override def toString = "\\" + data.toString }
+case class fiop(data: Operator)  extends Token { override def toString = revAllOps(data) }
 
 abstract class Operator
 case class lambda(data: String)  extends Operator
@@ -122,17 +122,6 @@ class FiStack (ar : ArrayBuffer[Token]) {
 }
 implicit def testing(s: ArrayBuffer[Token]) = new FiStack(s)
 
-def toString(tok : Token) : String = {
-  return tok match {
-    case num(x) => x.toString
-    case real(x) => x.toString
-    case char(x) => x.toString
-    case escword(x) => "\\" + x.toString
-    case word(x) => "\\" + x.toString
-    case fiop(x) => revAllOps(x)
-  }
-}
-
 def parse(in : String) : List[Token] = {
   var tokenList : List[Token] = List[Token]()
   var curString : String = in
@@ -204,7 +193,7 @@ def compute(op : Operator) :Unit = {
         val n = evalStack.pop match { case num(x) => x }
         val a = evalStack.pop
         evalStack.insert(evalStack.size - n, a)
-      case "show"    => print(toString(evalStack.last))
+      case "show"    => print(evalStack.last)
       case "discard" => evalStack.pop
       case "cap"     =>
         val name = evalStack.pop match { case word(x) => x }
@@ -237,7 +226,7 @@ def compute(op : Operator) :Unit = {
         envStacks(name).insert(envStacks(name).pos(n)+1, a)
       case "show"    =>
         val name = evalStack.last match { case word(x) => x}
-        envStacks(name).foreach( i => print(toString(i) + " ") )
+        envStacks(name).foreach( i => print(i + " ") )
         print('\n')
       case "discard" =>
         val name = evalStack.pop match { case word(x) => x}
@@ -331,7 +320,7 @@ def eval(tok : Token) :Unit = {
 def main = {
   while (!done) {
     print("| ")
-    evalStack.foreach( i => print(toString(i) + " "))
+    evalStack.foreach( i => print(i + " "))
     print('\n')
 
     parse(readLine(": ")).foreach(eval(_))
