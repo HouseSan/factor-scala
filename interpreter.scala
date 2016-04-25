@@ -1,4 +1,4 @@
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, LinkedHashMap}
 import scala.io.Source._
 import scala.util.matching.Regex
 import java.lang.IllegalArgumentException
@@ -30,8 +30,8 @@ val allOps = Map[String, Operator](
   "`"     -> coreOp("show"),
   "_"     -> coreOp("discard"),
   ";"     -> coreOp("cap"),
-  ";val"  -> coreOp("valCap"),
-  ";fun"  -> coreOp("funCap"),
+  ";@"  -> coreOp("valCap"),
+  ";@@"  -> coreOp("funCap"),
   "clear" -> coreOp("clear"),
   "empty" -> coreOp("empty"),
   "$#"    -> stackOp("copy"),
@@ -50,6 +50,55 @@ val allOps = Map[String, Operator](
   "%"     -> basicOp("modulo")
 )
 val revAllOps = allOps.map(_.swap)
+
+case class Lexic(r: Regex, f: String => Option[Token])
+
+//Mutable, Orderd Map. Traversal in same order as insertion.
+val basicOpsMap = LinkedHashMap[String, Operator](
+  """("""     -> lambda("lParen"),
+  """)"""     -> lambda("rParen"),
+  """@"""     -> coreOp("apply"),
+  """#"""     -> coreOp("copy"),
+  """^"""     -> coreOp("cut"),
+  """~"""     -> coreOp("insert"),
+  """`"""     -> coreOp("show"),
+  """_"""     -> coreOp("discard"),
+  """;@@"""   -> coreOp("funCap"),
+  """;@"""    -> coreOp("valCap"),
+  """;"""     -> coreOp("cap"),
+  """$#"""    -> stackOp("copy"),
+  """$^"""    -> stackOp("cut"),
+  """$~"""    -> stackOp("insert"),
+  """$`"""    -> stackOp("show"),
+  """$_"""    -> stackOp("discard"),
+  """$="""    -> stackOp("equal"),
+  """="""     -> basicOp("equal"),
+  """>"""     -> basicOp("greater"),
+  """<"""     -> basicOp("less"),
+  """+"""     -> basicOp("plus"),
+  """-"""     -> basicOp("minus"),
+  """*"""     -> basicOp("times"),
+  """/"""     -> basicOp("divide"),
+  """%"""     -> basicOp("modulo")
+)
+val wordOpsMap = LinkedHashMap[String, Token](
+  "DEBUG" -> fiop(coreOp("DEBUG")),
+  "DONE"  -> fiop(coreOp("DONE")),
+  "LOAD"  -> fiop(coreOp("LOAD")),
+  "clear" -> fiop(coreOp("clear")),
+  "empty" -> fiop(coreOp("empty"))
+)
+
+
+val wSpaceR = Lexic("""(\s+)(.*)""".r, {_ => None})
+val realR = Lexic("""(-?\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
+val intR = Lexic("""(-?\d+)(.*)""".r, {x => Some(num(x.toInt))})
+val wordR = Lexic("""(\w+)(.*)""".r, {x => Some(wordOpsMap.getOrElse(x, word(x)))})
+
+
+//  val lParenR = Lexic(
+//val tempLexicList = List(wSpaceR, realR, intR, wordR)
+val lexicList = List(wSpaceR, realR, intR, wordR) ++ basicOpsMap.map({case (s, op) => Lexic(s"(${Regex.quote(s)})(.*)".r, {_ => Some(fiop(op))} )})
 
 var debug = false
 var done = false
@@ -98,15 +147,7 @@ def parse(in : String) : List[Token] = {
 }
 
 def makeToken(in : String): (Option[Token], String) = {
-  case class Lexic(r: Regex, f: String => Option[Token])
 
-  val wSpaceR = Lexic("""(\s+)(.*)""".r, {_ => None})
-  val realR = Lexic("""(-?\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
-  val intR = Lexic("""(-?\d+)(.*)""".r, {x => Some(num(x.toInt))})
-  val wordR = Lexic("""(\w+)(.*)""".r, {x => Some(word(x))})
-  
-//  val lParenR = Lexic(
-  val lexicList = List(wSpaceR, realR, intR, wordR)
   for(lexic <- lexicList) {
     lexic.r.unapplySeq(in) match {
       case Some(List(m, r)) => return (lexic.f(m), r)
