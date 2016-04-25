@@ -1,5 +1,7 @@
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source._
+import scala.util.matching.Regex
+import java.lang.IllegalArgumentException
 
 abstract class Token
 case class num(data: Int)        extends Token
@@ -71,11 +73,6 @@ class FiStack (ar : ArrayBuffer[Token]) {
 }
 implicit def testing(s: ArrayBuffer[Token]) = new FiStack(s)
 
-def parse(in : String) {
-  if (!in.isEmpty)
-    in.replaceAll("//.*$", "").split("\\s+").filter(_ != "").foreach( i => eval(makeToken(i)));
-}
-
 def toString(tok : Token) : String = {
   return tok match {
     case num(x) => x.toString
@@ -87,8 +84,39 @@ def toString(tok : Token) : String = {
   }
 }
 
-def makeToken(in : String): Token = {
-  if (in.charAt(0).isDigit || (in.charAt(0) == '-' && in.length > 1)) {
+def parse(in : String) : List[Token] = {
+  var tokenList : List[Token] = List[Token]()
+  var curString : String = in
+  while (!curString.isEmpty) {
+    makeToken(curString) match {
+      case (Some(t), s) => curString = s;
+        tokenList = tokenList :+ t // O(n) lol
+      case (None, s) => curString = s
+    }
+  }
+  return tokenList
+}
+
+def makeToken(in : String): (Option[Token], String) = {
+  case class Lexic(r: Regex, f: String => Option[Token])
+
+  val wSpaceR = Lexic("""(\s+)(.*)""".r, {_ => None})
+  val realR = Lexic("""(\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
+  val intR = Lexic("""(\d+)(.*)""".r, {x => Some(num(x.toInt))})
+  val wordR = Lexic("""(\w+)(.*)""".r, {x => Some(word(x))})
+  
+//  val lParenR = Lexic(
+  val lexicList = List(wSpaceR, realR, intR, wordR)
+  for(lexic <- lexicList) {
+    lexic.r.unapplySeq(in) match {
+      case Some(List(m, r)) => return (lexic.f(m), r)
+      case None =>
+    }
+  }
+  throw new IllegalArgumentException(in)
+  return (None, "")
+
+/*  if (in.charAt(0).isDigit || (in.charAt(0) == '-' && in.length > 1)) {
     return {
       if (in contains ".") real(in.toDouble)
       else num(in.toInt)
@@ -111,6 +139,7 @@ def makeToken(in : String): Token = {
   else if (allOps contains in)
     return fiop(allOps(in))
   return word(in)
+*/
 }
 
 def compute(op : Operator) :Unit = {
@@ -195,23 +224,23 @@ def compute(op : Operator) :Unit = {
       case "plus" =>
         val a = evalStack.pop match { case real(x) => x case num(x) => x}
         val b = evalStack.pop match { case real(x) => x case num(x) => x}
-        eval(makeToken((a+b).toString))
+        eval(real(a+b))
       case "minus" =>
         val a = evalStack.pop match { case real(x) => x case num(x) => x}
         val b = evalStack.pop match { case real(x) => x case num(x) => x}
-        eval(makeToken((a-b).toString))
+        eval(real(a-b))
       case "times" =>
         val a = evalStack.pop match { case real(x) => x case num(x) => x}
         val b = evalStack.pop match { case real(x) => x case num(x) => x}
-        eval(makeToken((a*b).toString))
+        eval(real(a*b))
       case "divide" =>
         val a = evalStack.pop match { case real(x) => x case num(x) => x}
         val b = evalStack.pop match { case real(x) => x case num(x) => x}
-        eval(makeToken((a/b).toString))
+        eval(real(a/b))
       case "modulo" =>
         val a = evalStack.pop match { case real(x) => x case num(x) => x}
         val b = evalStack.pop match { case real(x) => x case num(x) => x}
-        eval(makeToken((a%b).toString))
+        eval(real(a%b))
       case _       => println("????")
     }
   }
@@ -264,7 +293,7 @@ def main = {
     evalStack.foreach( i => print(toString(i) + " "))
     print('\n')
 
-    parse(readLine(": "))
+    parse(readLine(": ")).foreach(eval(_))
   }
 }
 
