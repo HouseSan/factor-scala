@@ -323,7 +323,9 @@ def main = {
     evalStack.foreach( i => print(i + " "))
     print('\n')
 
-    parse(readLine(": ")).foreach(eval(_))
+    var line = readLine(": ")
+    if (line == null) done = true
+    else parse(line).foreach(eval(_))
   }
 }
 
