@@ -134,7 +134,6 @@ def parse(in : String) : List[Token] = {
 }
 
 def makeToken(in : String): (Option[Token], String) = {
-
   for(lexic <- lexicList) {
     lexic.r.unapplySeq(in) match {
       case Some(List(m, r)) => return (lexic.f(m), r)
@@ -159,12 +158,9 @@ def makeToken(in : String): (Option[Token], String) = {
         case _   => ' '
       })
   }
-  else if (in.charAt(0) == '\\')
-    return escword(in.slice(1, in.size))
-  else if (allOps contains in)
-    return fiop(allOps(in))
-  return word(in)
 */
+
+def parseFile(filename: String) = fromFile(filename + ".fi").getLines.flatMap(parse).foreach(eval)
 
 def compute(op : Operator) :Unit = {
   op match {
@@ -173,7 +169,7 @@ def compute(op : Operator) :Unit = {
       case "DONE"    => done = true
       case "LOAD"    =>
         val n = evalStack.pop match { case word(x) => x }
-        fromFile(n).getLines.foreach(parse)
+        parseFile(n)
       case "apply"   =>
         val name: String = evalStack.pop match { case word(x) => x }
         envStacks(name).foreach(eval)
@@ -312,6 +308,10 @@ def eval(tok : Token) :Unit = {
 }
 
 def main = {
+  // Parse the library file first, adding a bunch of definitions to scope
+  parseFile("lib")
+
+  // REPL
   while (!done) {
     print("| ")
     evalStack.foreach( i => print(i + " "))
