@@ -101,8 +101,8 @@ def makeToken(in : String): (Option[Token], String) = {
   case class Lexic(r: Regex, f: String => Option[Token])
 
   val wSpaceR = Lexic("""(\s+)(.*)""".r, {_ => None})
-  val realR = Lexic("""(\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
-  val intR = Lexic("""(\d+)(.*)""".r, {x => Some(num(x.toInt))})
+  val realR = Lexic("""(-?\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
+  val intR = Lexic("""(-?\d+)(.*)""".r, {x => Some(num(x.toInt))})
   val wordR = Lexic("""(\w+)(.*)""".r, {x => Some(word(x))})
   
 //  val lParenR = Lexic(
