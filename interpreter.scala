@@ -90,11 +90,11 @@ def toString(tok : Token) : String = {
 }
 
 def makeToken(in : String): Token = {
-  if (in.charAt(0).isDigit) {
-    if (in contains ".")
-      return real(in.toDouble)
-    else
-      return num(in.toInt)
+  if (in.charAt(0).isDigit || (in.charAt(0) == '-' && in.length > 1)) {
+    return {
+      if (in contains ".") real(in.toDouble)
+      else num(in.toInt)
+    }
   }
   else if (in.charAt(0) == ''') {
     if (in.charAt(1) != '\\')
