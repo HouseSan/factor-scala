@@ -1,6 +1,6 @@
-interpreter:
+interpreter: interpreter.scala main.scala
 	mkdir -p classes
-	scalac -d classes interpreter.scala
+	scalac -d classes $^
 
 run:
-	scala -classpath classes interpreter
+	scala -classpath classes Main
