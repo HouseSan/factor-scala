@@ -176,24 +176,32 @@ def compute(op : Operator) :Unit = {
         evalStack += envStacks(name)(envStacks(name).pos(n))
       case "cut"     =>
         val n = evalStack.pop match { case num(x) => x }
-        val name = evalStack.last match { case word(x) => x}
+        val name = evalStack.last match { case word(x) => x }
         evalStack += envStacks(name).remove(envStacks(name).pos(n))
       case "insert"  =>
         val n = evalStack.pop match { case num(x) => x }
         val a = evalStack.pop
-        val name = evalStack.last match { case word(x) => x}
+        val name = evalStack.last match { case word(x) => x }
         envStacks(name).insert(envStacks(name).pos(n)+1, a)
       case "show"    =>
-        val name = evalStack.last match { case word(x) => x}
+        val name = evalStack.last match { case word(x) => x }
         envStacks(name).foreach( i => print(i + " ") )
         print('\n')
       case "discard" =>
-        val name = evalStack.pop match { case word(x) => x}
+        val name = evalStack.pop match { case word(x) => x }
         if (valNames contains name)
           valNames -= name
         if (funNames contains name)
           funNames -= name
       case "equal"   =>
+        val a = envStacks(evalStack.pop match { case word(x) => x})
+        val b = envStacks(evalStack.pop match { case word(x) => x})
+        eval(word(
+          if (a.size == b.size)
+            if (a zip b map {case (a,b) => a == b} reduceLeft(_&&_)) "true" else "false"
+          else
+            "false"
+        ))
       case _         => println("????")
     }
 
