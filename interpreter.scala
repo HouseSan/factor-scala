@@ -3,6 +3,8 @@ import scala.io.Source._
 import scala.util.matching.Regex
 import java.lang.IllegalArgumentException
 
+object interpreter {
+
 abstract class Token
 case class num(data: Int)        extends Token { override def toString = data.toString }
 case class real(data: Double)    extends Token { override def toString = data.toString }
@@ -16,6 +18,7 @@ case class lambda(data: String)  extends Operator
 case class coreOp(data: String)  extends Operator
 case class stackOp(data: String) extends Operator
 case class basicOp(data: String) extends Operator
+
 
 val allOps = Map[String, Operator](
   "("     -> lambda("lParen"),
@@ -306,8 +309,7 @@ def eval(tok : Token) :Unit = {
         evalStack += tok
   }
 }
-
-def main = {
+def main(args: Array[String]) {
   // Parse the library file first, adding a bunch of definitions to scope
   parseFile("lib")
 
@@ -322,5 +324,4 @@ def main = {
     else parse(line).foreach(eval(_))
   }
 }
-
-main
+}
