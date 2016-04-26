@@ -68,7 +68,6 @@ val lexicList =
   basicOpsMap.map({case (s, op) => Lexic(s"(${Regex.quote(s)})(.*)".r, {_ => Some(fiop(op))} )}) ++
   List(wSpaceR, realR, intR, wordR, escwordR)
 
-
 var debug = false
 var done = false
 var evalStack = ArrayBuffer[Token]()
@@ -115,7 +114,6 @@ def makeToken(in : String): (Option[Token], String) = {
   throw new IllegalArgumentException(in)
   return (None, "")
 }
-
 /*
   else if (in.charAt(0) == ''') {
     if (in.charAt(1) != '\\')
@@ -255,7 +253,7 @@ def eval(tok : Token) :Unit = {
       x match {
         case "lParen" =>
           if (parenCount == 0) parenPos = evalStack.size
-          else evalStack += tok
+          evalStack += tok
           parenCount += 1
         case "rParen" =>
           parenCount -= 1
@@ -263,7 +261,7 @@ def eval(tok : Token) :Unit = {
             val name = lambdaCount.toString
             lambdaCount += 1
             val copy = ArrayBuffer[Token]()
-            evalStack.slice(parenPos, evalStack.size).copyToBuffer(copy)
+            evalStack.slice(parenPos+1, evalStack.size).copyToBuffer(copy)
             evalStack.reduceToSize(parenPos)
             envStacks += (name -> copy)
             eval(word(name))
