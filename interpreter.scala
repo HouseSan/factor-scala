@@ -57,15 +57,30 @@ package object Interpreter {
   )
   val revAllOps = basicOpsMap.map(_.swap) ++ wordOpsMap.map(_.swap)
 
-  val wSpaceR = Lexic("""(\s+)(.*)""".r, {_ => None})
-  val realR = Lexic("""(-?\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
-  val intR = Lexic("""(-?\d+)(.*)""".r, {x => Some(num(x.toInt))})
-  val wordR = Lexic("""(\w+)(.*)""".r, {x => Some(wordOpsMap.getOrElse(x, word(x)))})
-  val escwordR = Lexic( """\\(\w+)(.*)""".r, {x => Some(escword(x))})
+  def parseChar(x: String) : Char = {
+    if (x.charAt(0) != '\\')
+      return x.charAt(0)
+    else
+      return (x.charAt(1) match {
+        case '\\' => '\\'
+        case 't' => '\t'
+        case 'n' => '\n'
+        case '0' => '\0'
+        case 'x' => Integer.parseInt(x.slice(1, x.size), 16).toChar
+        case _   => ' '
+      })
+  }
+
+  val wSpaceR  = Lexic("""(\s+)(.*)""".r,        {_ => None})
+  val charR    = Lexic("""'(.+)'(.*)""".r,       {x => Some(char(parseChar(x)))})
+  val realR    = Lexic("""(-?\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
+  val intR     = Lexic("""(-?\d+)(.*)""".r,      {x => Some(num(x.toInt))})
+  val wordR    = Lexic("""(\w+)(.*)""".r,        {x => Some(wordOpsMap.getOrElse(x, word(x)))})
+  val escwordR = Lexic("""\\(\w+)(.*)""".r,      {x => Some(escword(x))})
 
   val lexicList =
     basicOpsMap.map({case (s, op) => Lexic(s"(${Regex.quote(s)})(.*)".r, {_ => Some(fiop(op))} )}) ++
-    List(wSpaceR, realR, intR, wordR, escwordR)
+    List(wSpaceR, charR, realR, intR, wordR, escwordR)
 
   var debug = false
   var done = false
@@ -113,21 +128,6 @@ package object Interpreter {
     throw new IllegalArgumentException(in)
     return (None, "")
   }
-  /*
-    else if (in.charAt(0) == ''') {
-      if (in.charAt(1) != '\\')
-        return char(in.charAt(1))
-      else
-        return char (in.charAt(2) match {
-          case 't' => '\t'
-          case 'n' => '\n'
-          case '0' => '\0'
-          case 'x' => Integer.parseInt(in.slice(3, in.size), 16).toChar
-          case _   => ' '
-        })
-    }
-  */
-
   def parseFile(filename: String) = fromFile(filename + ".fi").getLines.flatMap(parse).foreach(eval)
 
   def compute(op : Operator) :Unit = {
