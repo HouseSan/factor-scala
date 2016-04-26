@@ -19,24 +19,21 @@ case class coreOp(data: String)  extends Operator
 case class stackOp(data: String) extends Operator
 case class basicOp(data: String) extends Operator
 
+case class Lexic(r: Regex, f: String => Option[Token])
 
-val allOps = Map[String, Operator](
+//Mutable, Orderd Map. Traversal in same order as insertion.
+val basicOpsMap = LinkedHashMap[String, Operator](
   "("     -> lambda("lParen"),
   ")"     -> lambda("rParen"),
-  "DEBUG" -> coreOp("DEBUG"),
-  "DONE"  -> coreOp("DONE"),
-  "LOAD"  -> coreOp("LOAD"),
   "@"     -> coreOp("apply"),
   "#"     -> coreOp("copy"),
   "^"     -> coreOp("cut"),
   "~"     -> coreOp("insert"),
   "`"     -> coreOp("show"),
   "_"     -> coreOp("discard"),
+  ";@@"   -> coreOp("funCap"),
+  ";@"    -> coreOp("valCap"),
   ";"     -> coreOp("cap"),
-  ";@"  -> coreOp("valCap"),
-  ";@@"  -> coreOp("funCap"),
-  "clear" -> coreOp("clear"),
-  "empty" -> coreOp("empty"),
   "$#"    -> stackOp("copy"),
   "$^"    -> stackOp("cut"),
   "$~"    -> stackOp("insert"),
@@ -52,38 +49,6 @@ val allOps = Map[String, Operator](
   "/"     -> basicOp("divide"),
   "%"     -> basicOp("modulo")
 )
-val revAllOps = allOps.map(_.swap)
-
-case class Lexic(r: Regex, f: String => Option[Token])
-
-//Mutable, Orderd Map. Traversal in same order as insertion.
-val basicOpsMap = LinkedHashMap[String, Operator](
-  """("""     -> lambda("lParen"),
-  """)"""     -> lambda("rParen"),
-  """@"""     -> coreOp("apply"),
-  """#"""     -> coreOp("copy"),
-  """^"""     -> coreOp("cut"),
-  """~"""     -> coreOp("insert"),
-  """`"""     -> coreOp("show"),
-  """_"""     -> coreOp("discard"),
-  """;@@"""   -> coreOp("funCap"),
-  """;@"""    -> coreOp("valCap"),
-  """;"""     -> coreOp("cap"),
-  """$#"""    -> stackOp("copy"),
-  """$^"""    -> stackOp("cut"),
-  """$~"""    -> stackOp("insert"),
-  """$`"""    -> stackOp("show"),
-  """$_"""    -> stackOp("discard"),
-  """$="""    -> stackOp("equal"),
-  """="""     -> basicOp("equal"),
-  """>"""     -> basicOp("greater"),
-  """<"""     -> basicOp("less"),
-  """+"""     -> basicOp("plus"),
-  """-"""     -> basicOp("minus"),
-  """*"""     -> basicOp("times"),
-  """/"""     -> basicOp("divide"),
-  """%"""     -> basicOp("modulo")
-)
 val wordOpsMap = LinkedHashMap[String, Token](
   "DEBUG" -> fiop(coreOp("DEBUG")),
   "DONE"  -> fiop(coreOp("DONE")),
@@ -91,6 +56,7 @@ val wordOpsMap = LinkedHashMap[String, Token](
   "clear" -> fiop(coreOp("clear")),
   "empty" -> fiop(coreOp("empty"))
 )
+val revAllOps = basicOpsMap.map(_.swap) ++ wordOpsMap.map(_.swap)
 
 val wSpaceR = Lexic("""(\s+)(.*)""".r, {_ => None})
 val realR = Lexic("""(-?\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
