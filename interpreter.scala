@@ -71,6 +71,7 @@ package object Interpreter {
       })
   }
 
+  val commentR = Lexic("""(!.*$)(.*)""".r,        {_ => None})
   val wSpaceR  = Lexic("""(\s+)(.*)""".r,        {_ => None})
   val charR    = Lexic("""'(.+)'(.*)""".r,       {x => Some(char(parseChar(x)))})
   val realR    = Lexic("""(-?\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
@@ -80,7 +81,7 @@ package object Interpreter {
 
   val lexicList =
     basicOpsMap.map({case (s, op) => Lexic(s"(${Regex.quote(s)})(.*)".r, {_ => Some(fiop(op))} )}) ++
-    List(wSpaceR, charR, realR, intR, wordR, escwordR)
+    List(commentR, wSpaceR, charR, realR, intR, wordR, escwordR)
 
   var debug = false
   var done = false
