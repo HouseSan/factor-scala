@@ -64,8 +64,10 @@ val intR = Lexic("""(-?\d+)(.*)""".r, {x => Some(num(x.toInt))})
 val wordR = Lexic("""(\w+)(.*)""".r, {x => Some(wordOpsMap.getOrElse(x, word(x)))})
 val escwordR = Lexic( """\\(\w+)(.*)""".r, {x => Some(escword(x))})
 
-val lexicList = List(wSpaceR, realR, intR, wordR, escwordR) ++
-  basicOpsMap.map({case (s, op) => Lexic(s"(${Regex.quote(s)})(.*)".r, {_ => Some(fiop(op))} )})
+val lexicList =
+  basicOpsMap.map({case (s, op) => Lexic(s"(${Regex.quote(s)})(.*)".r, {_ => Some(fiop(op))} )}) ++
+  List(wSpaceR, realR, intR, wordR, escwordR)
+
 
 var debug = false
 var done = false
