@@ -156,13 +156,19 @@ package object Interpreter {
         case "cap"     =>
           val name = evalStack.pop match { case word(x) => x }
           val copy = ArrayBuffer[Token]()
+          valNames -= name
+          funNames -= name
           evalStack.copyToBuffer(copy)
           envStacks += (name -> copy)
           evalStack.clear
-        case "valCap"  => valNames += (evalStack.last match { case word(x) => x})
+        case "valCap"  =>
+          val name = evalStack.last match { case word(x) => x}
           eval(fiop(coreOp("cap")))
-        case "funCap"  => funNames += (evalStack.last match { case word(x) => x})
+          valNames += name
+        case "funCap"  =>
+          val name = evalStack.last match { case word(x) => x}
           eval(fiop(coreOp("cap")))
+          funNames += name
         case "clear"   => evalStack.clear
         case "empty"   => eval(word(if (evalStack.isEmpty) "true" else "false"))
         case _         => println("????")
