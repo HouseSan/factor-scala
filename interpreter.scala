@@ -250,8 +250,13 @@ package object Interpreter {
   }
 
   def eval(tok : Token) :Unit = {
-    if (debug)
-      println(tok);
+    if (debug) {
+      readLine("")
+      print("DEBUG| ")
+      evalStack.foreach( i => print(i + " "))
+      print('\n')
+      print(tok)
+    }
     tok match {
       case num(x)     => evalStack += num(x)
       case real(x)    => evalStack += real(x)
