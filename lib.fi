@@ -12,9 +12,10 @@
 args;
 (\args 1^0$~_) push ;@@
 (\args 0$^1^_) pop ;@@
+(\args 1^$#1^_) get ;@@
 (\args 0$#1^_) top ;@@
 
-((__) (push push top @ pop pop while) 2#@@@) while ;@@
+(push push 1 get @ (pop pop) (top @ pop pop while) 2^@@) while ;@@
 
 !((__) (\args 1 2^-0$~ 1#0$~_ @ \args 0$^1^0$^1^ _ repeat) 2#0<@@) repeat ;@@
-((__) (decr push push top @ pop pop repeat) 2#0<@@) repeat ;@@
+((__) (decr push 0# push @ pop pop repeat) 2#0<@@) repeat ;@@
