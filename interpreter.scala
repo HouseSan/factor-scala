@@ -179,11 +179,11 @@ package object Interpreter {
         case "copy"    =>
           val n = evalStack.pop match { case num(x) => x }
           val name = evalStack.last match { case word(x) => x}
-          evalStack += envStacks(name)(envStacks(name).pos(n))
+          eval(envStacks(name)(envStacks(name).pos(n)))
         case "cut"     =>
           val n = evalStack.pop match { case num(x) => x }
           val name = evalStack.last match { case word(x) => x }
-          evalStack += envStacks(name).remove(envStacks(name).pos(n))
+          eval(envStacks(name).remove(envStacks(name).pos(n)))
         case "insert"  =>
           val n = evalStack.pop match { case num(x) => x }
           val a = evalStack.pop
