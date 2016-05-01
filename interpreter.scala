@@ -225,21 +225,41 @@ package object Interpreter {
           val b = evalStack.pop match { case real(x) => x case num(x) => x}
           eval(if (a < b) word("true") else word("false"))
         case "plus" =>
-          val a = evalStack.pop match { case real(x) => x case num(x) => x}
-          val b = evalStack.pop match { case real(x) => x case num(x) => x}
-          eval(real(a+b))
+          val a = evalStack.pop
+          val b = evalStack.pop
+          eval((a,b) match {
+            case (num(x), num(y))   => num(x+y)
+            case (real(x), num(y))  => real(x+y)
+            case (num(x), real(y))  => real(x+y)
+            case (real(x), real(y)) => real(x+y)
+          })
         case "minus" =>
-          val a = evalStack.pop match { case real(x) => x case num(x) => x}
-          val b = evalStack.pop match { case real(x) => x case num(x) => x}
-          eval(real(a-b))
+          val a = evalStack.pop
+          val b = evalStack.pop
+          eval((a,b) match {
+            case (num(x), num(y))   => num(x-y)
+            case (real(x), num(y))  => real(x-y)
+            case (num(x), real(y))  => real(x-y)
+            case (real(x), real(y)) => real(x-y)
+          })
         case "times" =>
-          val a = evalStack.pop match { case real(x) => x case num(x) => x}
-          val b = evalStack.pop match { case real(x) => x case num(x) => x}
-          eval(real(a*b))
+          val a = evalStack.pop
+          val b = evalStack.pop
+          eval((a,b) match {
+            case (num(x), num(y))   => num(x*y)
+            case (real(x), num(y))  => real(x*y)
+            case (num(x), real(y))  => real(x*y)
+            case (real(x), real(y)) => real(x*y)
+          })
         case "divide" =>
-          val a = evalStack.pop match { case real(x) => x case num(x) => x}
-          val b = evalStack.pop match { case real(x) => x case num(x) => x}
-          eval(real(a/b))
+          val a = evalStack.pop
+          val b = evalStack.pop
+          eval((a,b) match {
+            case (num(x), num(y))   => num(x/y)
+            case (real(x), num(y))  => real(x/y)
+            case (num(x), real(y))  => real(x/y)
+            case (real(x), real(y)) => real(x/y)
+          })
         case "modulo" =>
           val a = evalStack.pop match { case real(x) => x case num(x) => x}
           val b = evalStack.pop match { case real(x) => x case num(x) => x}
