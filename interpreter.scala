@@ -53,7 +53,9 @@ package object Interpreter {
     "DONE"  -> fiop(coreOp("DONE")),
     "LOAD"  -> fiop(coreOp("LOAD")),
     "clear" -> fiop(coreOp("clear")),
-    "empty" -> fiop(coreOp("empty"))
+    "empty" -> fiop(coreOp("empty")),
+    "real"  -> fiop(basicOp("real")),
+    "num"   -> fiop(basicOp("num"))
   )
   val revAllOps = basicOpsMap.map(_.swap) ++ wordOpsMap.map(_.swap)
 
@@ -212,6 +214,8 @@ package object Interpreter {
       }
 
       case basicOp(x) => x match {
+        case "real"  => eval(real(evalStack.pop match { case real(x) => x case num(x) => x.toDouble}))
+        case "num"   => eval(num(evalStack.pop match { case real(x) => x.toInt case num(x) => x}))
         case "equal" =>
           val a = evalStack.pop
           val b = evalStack.pop
@@ -261,9 +265,14 @@ package object Interpreter {
             case (real(x), real(y)) => real(x/y)
           })
         case "modulo" =>
-          val a = evalStack.pop match { case real(x) => x case num(x) => x}
-          val b = evalStack.pop match { case real(x) => x case num(x) => x}
-          eval(real(a%b))
+          val a = evalStack.pop
+          val b = evalStack.pop
+          eval((a,b) match {
+            case (num(x), num(y))   => num(x%y)
+            case (real(x), num(y))  => real(x%y)
+            case (num(x), real(y))  => real(x%y)
+            case (real(x), real(y)) => real(x%y)
+          })
         case _       => println("????")
       }
     }
