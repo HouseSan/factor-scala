@@ -82,8 +82,9 @@ package object Interpreter {
   val escwordR = Lexic("""\\(\w+)(.*)""".r,      {x => Some(escword(x))})
 
   val lexicList =
+    List(commentR, wSpaceR, charR, realR, intR) ++
     basicOpsMap.map({case (s, op) => Lexic(s"(${Regex.quote(s)})(.*)".r, {_ => Some(fiop(op))} )}) ++
-    List(commentR, wSpaceR, charR, realR, intR, wordR, escwordR)
+    List(wordR, escwordR)
 
   var debug = false
   var done = false
