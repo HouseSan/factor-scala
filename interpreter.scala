@@ -356,14 +356,34 @@ package object Interpreter {
       print('\n')
 
       var line = readLine(": ")
+      var evalStackCopy = ArrayBuffer[Token]()
       if (line == null) done = true
       else try {
-        parse(line).foreach(eval(_))
-      } catch {
+        parse(line).foreach(
+        {
+          evalStackCopy.clear
+          evalStack.copyToBuffer(evalStackCopy)
+          eval(_)
+        })
+      }
+      catch {
         case e:IllegalArgumentException =>
-          print("\nInvalid input! Exception: \n")
-          print(e.toString())
-          print('\n')
+          println("\nInvalid input! Exception: \n" + e)
+        case e:scala.MatchError =>
+          evalStack.clear
+          evalStackCopy.copyToBuffer(evalStack)
+          //restore state
+          println("\nInvalid operator use! Exception: \n" + e)
+        case e:java.util.NoSuchElementException =>
+          evalStack.clear
+          evalStackCopy.copyToBuffer(evalStack)
+          //restore state
+          println("\nNot enough arguments for operator! Exception: \n" + e)
+        case unknown:Throwable =>
+          evalStack.clear
+          evalStackCopy.copyToBuffer(evalStack)
+          //restore state
+          println("\nUnknown Exception:\n" + unknown)
       }
     }
   }
