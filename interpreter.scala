@@ -324,6 +324,7 @@ package object Interpreter {
           case "rParen" =>
             parenCount -= 1
             if (parenCount < 0) {
+              parenCount = 0
               throw new IllegalArgumentException("right parenthesis must have matching left parenthesis");
             }
             else if (parenCount == 0) {
@@ -356,7 +357,14 @@ package object Interpreter {
 
       var line = readLine(": ")
       if (line == null) done = true
-      else parse(line).foreach(eval(_))
+      else try {
+        parse(line).foreach(eval(_))
+      } catch {
+        case e:IllegalArgumentException =>
+          print("\nInvalid input! Exception: \n")
+          print(e.toString())
+          print('\n')
+      }
     }
   }
 }
