@@ -39,6 +39,9 @@ package object Interpreter {
     "$`"    -> stackOp("show"),
     "$_"    -> stackOp("discard"),
     "$="    -> stackOp("equal"),
+    "$;@@"  -> stackOp("funCap"),
+    "$;@"   -> stackOp("valCap"),
+    "$;"    -> stackOp("cap"),
     "="     -> basicOp("equal"),
     ">"     -> basicOp("greater"),
     "<"     -> basicOp("less"),
@@ -202,6 +205,20 @@ package object Interpreter {
             valNames -= name
           if (funNames contains name)
             funNames -= name
+        case "cap"     =>
+          val name = evalStack.pop match { case word(x) => x }
+          val copy = ArrayBuffer[Token](evalStack.pop)
+          valNames -= name
+          funNames -= name
+          envStacks += (name -> copy)
+        case "valCap"  =>
+          val name = evalStack.last match { case word(x) => x}
+          eval(fiop(stackOp("cap")))
+          valNames += name
+        case "funCap"  =>
+          val name = evalStack.last match { case word(x) => x}
+          eval(fiop(stackOp("cap")))
+          funNames += name
         case "equal"   =>
           val a = envStacks(evalStack.pop match { case word(x) => x})
           val b = envStacks(evalStack.pop match { case word(x) => x})
