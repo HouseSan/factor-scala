@@ -63,22 +63,27 @@ package object Interpreter {
   val revAllOps = basicOpsMap.map(_.swap) ++ wordOpsMap.map(_.swap)
 
   def parseChar(x: String) : Char = {
-    if (x.charAt(0) != '\\')
-      return x.charAt(0)
+    if (x.charAt(0) != '\\') {
+      if (x.length() == 1)
+        return x.charAt(0)
+      else throw new IllegalArgumentException("Invalid char: " + x);
+    }
     else
       return (x.charAt(1) match {
+        case '\'' => '\''
         case '\\' => '\\'
         case 't' => '\t'
         case 'n' => '\n'
         case '0' => '\0'
-        case 'x' => Integer.parseInt(x.slice(1, x.size), 16).toChar
-        case _   => ' '
+        case 'x' => Integer.parseInt(x.slice(2, x.size), 16).toChar
+        case _   => throw new IllegalArgumentException("Invalid char: " + x);
       })
   }
 
   val commentR = Lexic("""(!.*$)(.*)""".r,       {_ => None})
   val wSpaceR  = Lexic("""(\s+)(.*)""".r,        {_ => None})
-  val charR    = Lexic("""'(.+)'(.*)""".r,       {x => Some(char(parseChar(x)))})
+//  val charR    = Lexic("""'((\\'|[^'])+)'(.*)""".r,       {x => println("HELLO CITIZENS!" + x); Some(char(parseChar(x)))})
+  val charR    = Lexic("""'(\\'|\\x[\da-fA-F]+|[^\\])'(.*)""".r,       {x => Some(char(parseChar(x)))})
   val realR    = Lexic("""(-?\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
   val intR     = Lexic("""(-?\d+)(.*)""".r,      {x => Some(num(x.toInt))})
   val wordR    = Lexic("""(\w+)(.*)""".r,        {x => Some(wordOpsMap.getOrElse(x, word(x)))})
