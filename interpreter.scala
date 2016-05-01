@@ -323,7 +323,10 @@ package object Interpreter {
             parenCount += 1
           case "rParen" =>
             parenCount -= 1
-            if (parenCount == 0) {
+            if (parenCount < 0) {
+              throw new IllegalArgumentException("right parenthesis must have matching left parenthesis");
+            }
+            else if (parenCount == 0) {
               val name = lambdaCount.toString
               lambdaCount += 1
               val copy = ArrayBuffer[Token]()
