@@ -9,7 +9,7 @@ package object Interpreter {
   case class real(data: Double)    extends Token { override def toString = data.toString }
   case class char(data: Char)      extends Token { override def toString = data.toString }
   case class escword(data: String) extends Token { override def toString = "\\" + data.toString }
-  case class word(data: String)    extends Token { override def toString = "\\" + data.toString }
+  case class word(data: String)    extends Token { override def toString = data.toString }
   case class fiop(data: Operator)  extends Token { override def toString = revAllOps(data) }
 
   abstract class Operator
@@ -338,7 +338,7 @@ package object Interpreter {
               evalStack.slice(parenPos+1, evalStack.size).copyToBuffer(copy)
               evalStack.reduceToSize(parenPos)
               envStacks += (name -> copy)
-              eval(word(name))
+              eval(escword(name))
             }
             else evalStack += tok
         }
