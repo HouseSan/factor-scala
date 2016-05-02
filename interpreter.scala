@@ -211,9 +211,11 @@ package object Interpreter {
             funNames -= name
         case "cap"     =>
           val name = evalStack.pop match { case word(x) => x case escword(x) => x }
-          val copy = ArrayBuffer[Token](evalStack.pop)
+          val copyName = evalStack.pop match { case word(x) => x case escword(x) => x }
+          val copy = ArrayBuffer[Token]()
           valNames -= name
           funNames -= name
+          envStacks(copyName).copyToBuffer(copy)
           envStacks += (name -> copy)
         case "valCap"  =>
           val name = evalStack.last match { case word(x) => x case escword(x) => x }
