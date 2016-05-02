@@ -1,4 +1,4 @@
-import scala.collection.mutable.{ArrayBuffer, LinkedHashMap}
+import scala.collection.mutable.{ArrayBuffer, LinkedHashMap, Map}
 import scala.io.Source._
 import scala.util.matching.Regex
 import java.lang.IllegalArgumentException
@@ -170,7 +170,7 @@ package object Interpreter {
           valNames -= name
           funNames -= name
           evalStack.copyToBuffer(copy)
-          envStacks += (name -> copy)
+          envStacks put (name, copy)
           evalStack.clear
         case "valCap"  =>
           val name = evalStack.last match { case word(x) => x case escword(x) => x }
@@ -198,7 +198,9 @@ package object Interpreter {
           val n = evalStack.pop match { case num(x) => x }
           val a = evalStack.pop
           val name = evalStack.pop match { case word(x) => x case escword(x) => x }
+          if (! (envStacks contains name)) envStacks put (name, ArrayBuffer[Token]())
           envStacks(name).insert(envStacks(name).pos(n)+1, a)
+
         case "show"    =>
           val name = evalStack.last match { case word(x) => x case escword(x) => x }
           envStacks(name).foreach( i => print(i + " ") )
@@ -216,7 +218,7 @@ package object Interpreter {
           valNames -= name
           funNames -= name
           envStacks(copyName).copyToBuffer(copy)
-          envStacks += (name -> copy)
+          envStacks put (name, copy)
         case "valCap"  =>
           val name = evalStack.last match { case word(x) => x case escword(x) => x }
           eval(fiop(stackOp("cap")))
@@ -340,7 +342,7 @@ package object Interpreter {
               val copy = ArrayBuffer[Token]()
               evalStack.slice(parenPos+1, evalStack.size).copyToBuffer(copy)
               evalStack.reduceToSize(parenPos)
-              envStacks += (name -> copy)
+              envStacks put (name, copy)
               eval(escword(name))
             }
             else evalStack += tok
