@@ -148,10 +148,10 @@ package object Interpreter {
         case "DEBUG"   => debug = !debug
         case "DONE"    => done = true
         case "LOAD"    =>
-          val n = evalStack.pop match { case word(x) => x }
+          val n = evalStack.pop match { case word(x) => x case escword(x) => x }
           parseFile(n)
         case "apply"   =>
-          val name: String = evalStack.pop match { case word(x) => x }
+          val name: String = evalStack.pop match { case word(x) => x case escword(x) => x }
           envStacks(name).foreach(eval)
         case "copy"    =>
           val n = evalStack.pop match { case num(x) => x }
@@ -166,7 +166,7 @@ package object Interpreter {
         case "show"    => print(evalStack.last)
         case "discard" => evalStack.pop
         case "cap"     =>
-          val name = evalStack.pop match { case word(x) => x }
+          val name = evalStack.pop match { case word(x) => x case escword(x) => x }
           val copy = ArrayBuffer[Token]()
           valNames -= name
           funNames -= name
@@ -174,11 +174,11 @@ package object Interpreter {
           envStacks += (name -> copy)
           evalStack.clear
         case "valCap"  =>
-          val name = evalStack.last match { case word(x) => x}
+          val name = evalStack.last match { case word(x) => x case escword(x) => x }
           eval(fiop(coreOp("cap")))
           valNames += name
         case "funCap"  =>
-          val name = evalStack.last match { case word(x) => x}
+          val name = evalStack.last match { case word(x) => x case escword(x) => x }
           eval(fiop(coreOp("cap")))
           funNames += name
         case "clear"   => evalStack.clear
@@ -189,44 +189,44 @@ package object Interpreter {
       case stackOp(x) => x match {
         case "copy"    =>
           val n = evalStack.pop match { case num(x) => x }
-          val name = evalStack.last match { case word(x) => x}
+          val name = evalStack.last match { case word(x) => x case escword(x) => x }
           eval(envStacks(name)(envStacks(name).pos(n)))
         case "cut"     =>
           val n = evalStack.pop match { case num(x) => x }
-          val name = evalStack.last match { case word(x) => x }
+          val name = evalStack.last match { case word(x) => x case escword(x) => x }
           eval(envStacks(name).remove(envStacks(name).pos(n)))
         case "insert"  =>
           val n = evalStack.pop match { case num(x) => x }
           val a = evalStack.pop
-          val name = evalStack.last match { case word(x) => x }
+          val name = evalStack.last match { case word(x) => x case escword(x) => x }
           envStacks(name).insert(envStacks(name).pos(n)+1, a)
         case "show"    =>
-          val name = evalStack.last match { case word(x) => x }
+          val name = evalStack.last match { case word(x) => x case escword(x) => x }
           envStacks(name).foreach( i => print(i + " ") )
           print('\n')
         case "discard" =>
-          val name = evalStack.pop match { case word(x) => x }
+          val name = evalStack.pop match { case word(x) => x case escword(x) => x }
           if (valNames contains name)
             valNames -= name
           if (funNames contains name)
             funNames -= name
         case "cap"     =>
-          val name = evalStack.pop match { case word(x) => x }
+          val name = evalStack.pop match { case word(x) => x case escword(x) => x }
           val copy = ArrayBuffer[Token](evalStack.pop)
           valNames -= name
           funNames -= name
           envStacks += (name -> copy)
         case "valCap"  =>
-          val name = evalStack.last match { case word(x) => x}
+          val name = evalStack.last match { case word(x) => x case escword(x) => x }
           eval(fiop(stackOp("cap")))
           valNames += name
         case "funCap"  =>
-          val name = evalStack.last match { case word(x) => x}
+          val name = evalStack.last match { case word(x) => x case escword(x) => x }
           eval(fiop(stackOp("cap")))
           funNames += name
         case "equal"   =>
-          val a = envStacks(evalStack.pop match { case word(x) => x})
-          val b = envStacks(evalStack.pop match { case word(x) => x})
+          val a = envStacks(evalStack.pop match { case word(x) => x case escword(x) => x })
+          val b = envStacks(evalStack.pop match { case word(x) => x case escword(x) => x })
           eval(word(
             if (a.size == b.size)
               if (a zip b map {case (a,b) => a == b} reduceLeft(_&&_)) "true" else "false"
@@ -313,7 +313,7 @@ package object Interpreter {
       case num(x)     => evalStack += num(x)
       case real(x)    => evalStack += real(x)
       case char(x)    => evalStack += char(x)
-      case escword(x) => evalStack += word(x)
+      case escword(x) => evalStack += escword(x)
       case word(x)    => evalStack += word(x)
         if (parenCount == 0) {
           if (valNames contains x) eval(fiop(coreOp("apply")))
