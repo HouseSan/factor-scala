@@ -368,10 +368,12 @@ package object Interpreter {
       var evalStackCopy = ArrayBuffer[Token]()
       if (line == null) done = true
       else try {
+        evalStackCopy.clear
+        evalStack.copyToBuffer(evalStackCopy)
+        println("first..." + evalStackCopy)
+        
         parse(line).foreach(
         {
-          evalStackCopy.clear
-          evalStack.copyToBuffer(evalStackCopy)
           eval(_)
         })
       }
@@ -380,6 +382,7 @@ package object Interpreter {
           //restore state
           evalStack.clear
           evalStackCopy.copyToBuffer(evalStack)
+          println("second..." + evalStackCopy)
           println("\nInvalid input! Exception: \n" + e)
         case e:scala.MatchError =>
           //restore state
