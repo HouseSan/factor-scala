@@ -8,7 +8,7 @@
 ( 0 - ) neg ;@@
 ( 1 1^ - ) decr ;@@
 ( 1 + ) incr ;@@
-( real 1^ real ) eq ;@@
+( real 1^ real =) eq ;@@
 
 (();) clear ;@@
 (size 0 =) empty ;@@
