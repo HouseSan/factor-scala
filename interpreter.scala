@@ -228,7 +228,8 @@ package object Interpreter {
           val b = envStacks(evalStack.pop match { case word(x) => x case escword(x) => x })
           eval(word(
             if (a.size == b.size)
-              if (a zip b map {case (a,b) => a == b} reduceLeft(_&&_)) "true" else "false"
+              if (a.isEmpty || (a zip b map {case (a,b) => a == b} reduceLeft(_&&_))) "true"
+              else "false"
             else
               "false"
           ))
