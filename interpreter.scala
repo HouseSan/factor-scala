@@ -394,6 +394,10 @@ package object Interpreter {
           evalStack.clear
           evalStackCopy.copyToBuffer(evalStack)
           println("\nIndex out of range! Exception: \n" + e)
+        case e:java.io.FileNotFoundException =>
+          evalStack.clear
+          evalStackCopy.copyToBuffer(evalStack)
+          println("\nFile name does not exist (Note: '.fi' is automatically appended)! Exception: \n" + e)
         case unknown:Throwable =>
           //restore state
           evalStack.clear
