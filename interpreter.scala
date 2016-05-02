@@ -82,7 +82,7 @@ package object Interpreter {
 
   val commentR = Lexic("""(!.*$)(.*)""".r,       {_ => None})
   val wSpaceR  = Lexic("""(\s+)(.*)""".r,        {_ => None})
-  val charR    = Lexic("""'(\\'|\\x[\da-fA-F]+|[^\\])'(.*)""".r,       {x => Some(char(parseChar(x)))})
+  val charR    = Lexic("""'(\\x[\da-fA-F]+|\\.|[^\\])'(.*)""".r,       {x => Some(char(parseChar(x)))})
   val realR    = Lexic("""(-?\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
   val intR     = Lexic("""(-?\d+)(.*)""".r,      {x => Some(num(x.toInt))})
   val wordR    = Lexic("""(\w+)(.*)""".r,        {x => Some( if (wordOpsMap contains x) fiop(wordOpsMap(x)) else word(x))})
