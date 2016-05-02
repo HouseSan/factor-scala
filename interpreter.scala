@@ -51,14 +51,14 @@ package object Interpreter {
     "/"     -> basicOp("divide"),
     "%"     -> basicOp("modulo")
   )
-  val wordOpsMap = LinkedHashMap[String, Token](
-    "DEBUG" -> fiop(coreOp("DEBUG")),
-    "DONE"  -> fiop(coreOp("DONE")),
-    "LOAD"  -> fiop(coreOp("LOAD")),
-    "clear" -> fiop(coreOp("clear")),
-    "empty" -> fiop(coreOp("empty")),
-    "real"  -> fiop(basicOp("real")),
-    "num"   -> fiop(basicOp("num"))
+  val wordOpsMap = LinkedHashMap[String, Operator](
+    "DEBUG" -> coreOp("DEBUG"),
+    "DONE"  -> coreOp("DONE"),
+    "LOAD"  -> coreOp("LOAD"),
+    "clear" -> coreOp("clear"),
+    "empty" -> coreOp("empty"),
+    "real"  -> basicOp("real"),
+    "num"   -> basicOp("num")
   )
   val revAllOps = basicOpsMap.map(_.swap) ++ wordOpsMap.map(_.swap)
 
@@ -82,11 +82,10 @@ package object Interpreter {
 
   val commentR = Lexic("""(!.*$)(.*)""".r,       {_ => None})
   val wSpaceR  = Lexic("""(\s+)(.*)""".r,        {_ => None})
-//  val charR    = Lexic("""'((\\'|[^'])+)'(.*)""".r,       {x => println("HELLO CITIZENS!" + x); Some(char(parseChar(x)))})
   val charR    = Lexic("""'(\\'|\\x[\da-fA-F]+|[^\\])'(.*)""".r,       {x => Some(char(parseChar(x)))})
   val realR    = Lexic("""(-?\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
   val intR     = Lexic("""(-?\d+)(.*)""".r,      {x => Some(num(x.toInt))})
-  val wordR    = Lexic("""(\w+)(.*)""".r,        {x => Some(wordOpsMap.getOrElse(x, word(x)))})
+  val wordR    = Lexic("""(\w+)(.*)""".r,        {x => Some( if (wordOpsMap contains x) fiop(wordOpsMap(x)) else word(x))})
   val escwordR = Lexic("""\\([a-zA-Z_]\w*)(.*)""".r,      {x => Some(escword(x))})
 
   val lexicList =
@@ -189,16 +188,16 @@ package object Interpreter {
       case stackOp(x) => x match {
         case "copy"    =>
           val n = evalStack.pop match { case num(x) => x }
-          val name = evalStack.last match { case word(x) => x case escword(x) => x }
+          val name = evalStack.pop match { case word(x) => x case escword(x) => x }
           eval(envStacks(name)(envStacks(name).pos(n)))
         case "cut"     =>
           val n = evalStack.pop match { case num(x) => x }
-          val name = evalStack.last match { case word(x) => x case escword(x) => x }
+          val name = evalStack.pop match { case word(x) => x case escword(x) => x }
           eval(envStacks(name).remove(envStacks(name).pos(n)))
         case "insert"  =>
           val n = evalStack.pop match { case num(x) => x }
           val a = evalStack.pop
-          val name = evalStack.last match { case word(x) => x case escword(x) => x }
+          val name = evalStack.pop match { case word(x) => x case escword(x) => x }
           envStacks(name).insert(envStacks(name).pos(n)+1, a)
         case "show"    =>
           val name = evalStack.last match { case word(x) => x case escword(x) => x }
