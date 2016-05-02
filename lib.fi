@@ -17,5 +17,7 @@ args;
 
 (push push 1 get @ (pop pop) (top @ pop pop while) 2^@@) while ;@@
 
+(0#()$=not ( args 1# $; () args $;) (0#0$^push reverse) 2^@@) reverse ;@@
+
 !((__) (\args 1 2^-0$~ 1#0$~_ @ \args 0$^1^0$^1^ _ repeat) 2#0<@@) repeat ;@@
 ((__) (decr push 0# push @ pop pop repeat) 2#0<@@) repeat ;@@
