@@ -8,16 +8,35 @@
 ( 0 - ) neg ;@@
 ( 1 1^ - ) decr ;@@
 ( 1 + ) incr ;@@
+( real 1^ real ) eq ;@@
+
+(();) clear ;@@
+(size 0 =) empty ;@@
+
+(0$~) push ;@@
+(0$^) pop ;@@
+($#) get ;@@
+(0$#) top ;@@
 
 args;
-(\args 1^0$~) push ;@@
-(\args 0$^) pop ;@@
-(\args 1^$#) get ;@@
-(\args 0$#) top ;@@
+(\args 1^ push) pushA ;@@
+(\args pop) popA ;@@
+(\args 1^ get) getA ;@@
+(\args top) topA ;@@
 
-(push push 1 get @ (pop pop) (top @ pop pop while) 2^@@) while ;@@
+((args 1# $; () args $;) (0# 0$^ pushA Sreverse) 2#()$= not @@) Sreverse ;@@
+reverseArgs;
+(empty not (reverseArgs @ () reverseArgs $;) (reverseArgs 1^ push reverse) 2^@@) reverse ;@@
 
-(0#()$=not ( args 1# $; () args $;) (0#0$^push reverse) 2^@@) reverse ;@@
+STASH;
+(STASH;) stash;@@
+(STASH@) unstash;@@
 
-!((__) (\args 1 2^-0$~ 1#0$~_ @ \args 0$^1^0$^1^ _ repeat) 2#0<@@) repeat ;@@
-((__) (decr push 0# push @ pop pop repeat) 2#0<@@) repeat ;@@
+mapArgs;
+(pushA empty not (popA _) (topA @ mapArgs 1^ push popA map mapArgs pop) 2^@@) map ;@@
+(pushA pushA stash topA @ 1 getA map topA ; unstash popA popA _) Smap ;@@
+
+(pushA size 1 = not (popA _) (topA @ popA reduce) 2^@@) reduce ;@@
+(pushA pushA stash popA @ popA reduce pushA unstash popA) Sreduce ;@@
+
+((__) (decr pushA 0# pushA @ popA popA repeat) 2#0<@@) repeat ;@@

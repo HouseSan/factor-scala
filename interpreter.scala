@@ -55,8 +55,7 @@ package object Interpreter {
     "DEBUG" -> coreOp("DEBUG"),
     "DONE"  -> coreOp("DONE"),
     "LOAD"  -> coreOp("LOAD"),
-    "clear" -> coreOp("clear"),
-    "empty" -> coreOp("empty"),
+    "size"  -> coreOp("size"),
     "real"  -> basicOp("real"),
     "num"   -> basicOp("num")
   )
@@ -180,8 +179,7 @@ package object Interpreter {
           val name = evalStack.last match { case word(x) => x case escword(x) => x }
           eval(fiop(coreOp("cap")))
           funNames += name
-        case "clear"   => evalStack.clear
-        case "empty"   => eval(word(if (evalStack.isEmpty) "true" else "false"))
+        case "size"    => eval(num(evalStack.size))
         case _         => println("????")
       }
 
