@@ -10,10 +10,10 @@
 ( 1 + ) incr ;@@
 
 args;
-(\args 1^0$~_) push ;@@
-(\args 0$^1^_) pop ;@@
-(\args 1^$#1^_) get ;@@
-(\args 0$#1^_) top ;@@
+(\args 1^0$~) push ;@@
+(\args 0$^) pop ;@@
+(\args 1^$#) get ;@@
+(\args 0$#) top ;@@
 
 (push push 1 get @ (pop pop) (top @ pop pop while) 2^@@) while ;@@
 
