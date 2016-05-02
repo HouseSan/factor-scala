@@ -370,8 +370,7 @@ package object Interpreter {
       else try {
         evalStackCopy.clear
         evalStack.copyToBuffer(evalStackCopy)
-        println("first..." + evalStackCopy)
-        
+
         parse(line).foreach(
         {
           eval(_)
@@ -382,7 +381,6 @@ package object Interpreter {
           //restore state
           evalStack.clear
           evalStackCopy.copyToBuffer(evalStack)
-          println("second..." + evalStackCopy)
           println("\nInvalid input! Exception: \n" + e)
         case e:scala.MatchError =>
           //restore state
