@@ -161,6 +161,8 @@ package object Interpreter {
         case "insert"  =>
           val n = evalStack.pop match { case num(x) => x }
           val a = evalStack.pop
+          if(n < 0 || n > evalStack.size)
+            throw new IllegalArgumentException("Insert index out of range");
           evalStack.insert(evalStack.size - n, a)
         case "show"    => print(evalStack.last)
         case "discard" => evalStack.pop
@@ -372,21 +374,24 @@ package object Interpreter {
       }
       catch {
         case e:IllegalArgumentException =>
+          //restore state
+          evalStack.clear
+          evalStackCopy.copyToBuffer(evalStack)
           println("\nInvalid input! Exception: \n" + e)
         case e:scala.MatchError =>
+          //restore state
           evalStack.clear
           evalStackCopy.copyToBuffer(evalStack)
-          //restore state
           println("\nInvalid operator use! Exception: \n" + e)
         case e:java.util.NoSuchElementException =>
+          //restore state
           evalStack.clear
           evalStackCopy.copyToBuffer(evalStack)
-          //restore state
           println("\nNot enough arguments for operator! Exception: \n" + e)
         case unknown:Throwable =>
+          //restore state
           evalStack.clear
           evalStackCopy.copyToBuffer(evalStack)
-          //restore state
           println("\nUnknown Exception:\n" + unknown)
       }
     }
