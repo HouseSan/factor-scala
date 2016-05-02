@@ -161,8 +161,6 @@ package object Interpreter {
         case "insert"  =>
           val n = evalStack.pop match { case num(x) => x }
           val a = evalStack.pop
-          if(n < 0 || n > evalStack.size)
-            throw new IllegalArgumentException("Insert index out of range");
           evalStack.insert(evalStack.size - n, a)
         case "show"    => print(evalStack.last)
         case "discard" => evalStack.pop
@@ -392,6 +390,10 @@ package object Interpreter {
           evalStack.clear
           evalStackCopy.copyToBuffer(evalStack)
           println("\nNot enough arguments for operator! Exception: \n" + e)
+        case e:java.lang.IndexOutOfBoundsException =>
+          evalStack.clear
+          evalStackCopy.copyToBuffer(evalStack)
+          println("\nIndex out of range! Exception: \n" + e)
         case unknown:Throwable =>
           //restore state
           evalStack.clear
