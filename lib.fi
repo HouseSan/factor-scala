@@ -11,6 +11,14 @@
 ( 0# * ) square ;@@
 ( real 1^ real =) eq ;@@
 
+(size decr #) last ;@@
+(1#1#> () (1^) 2^@@) swapMin ;@@
+(1#1#< () (1^) 2^@@) swapMax ;@@
+(1#1#< @) min ;@@
+(1#1#> @) max ;@@
+(size 1 = (min minAll) () 2^@@) minAll ;@@
+(size 1 = (max maxAll) () 2^@@) maxAll ;@@
+
 (();) clear ;@@
 (size 0 =) empty ;@@
 
@@ -43,6 +51,7 @@ STASH;
 (pushA size 1 = not (popA _) (topA @ popA reduce) 2^@@) reduce ;@@
 (pushA pushA stash popA @ popA reduce pushA unstash popA) Sreduce ;@@
 
+(() 2^ 2^ @@) if ;@@
 (pushA pushA 1 getA @ (popA popA _ _) (topA@ popA popA while) 2^@@) while ;@@
 (0#0< (_ _ () pushA) (decr 1# pushA repeat) 2^@@ popA @) repeat ;@@
 
