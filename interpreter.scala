@@ -7,7 +7,7 @@ package object Interpreter {
   abstract class Token
   case class num(data: Int)        extends Token { override def toString = data.toString }
   case class real(data: Double)    extends Token { override def toString = data.toString }
-  case class char(data: Char)      extends Token { override def toString = data.toString }
+  case class char(data: Char)      extends Token { override def toString = ''' + (data match {case'\t'=>"\\t"case'\n'=>"\\n"case'\0'=>"\\0"case e=>e.toString}) + '''}
   case class escword(data: String) extends Token { override def toString = "\\" + data.toString }
   case class word(data: String)    extends Token { override def toString = data.toString }
   case class fiop(data: Operator)  extends Token { override def toString = revAllOps(data) }
@@ -161,7 +161,7 @@ package object Interpreter {
           val n = evalStack.pop match { case num(x) => x }
           val a = evalStack.pop
           evalStack.insert(evalStack.size - n, a)
-        case "show"    => print(evalStack.last)
+        case "show"    => print(evalStack.last match { case char(x) => x case e => e})
         case "discard" => evalStack.pop
         case "cap"     =>
           val name = evalStack.pop match { case word(x) => x case escword(x) => x }
