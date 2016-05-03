@@ -8,6 +8,7 @@
 ( 0 - ) neg ;@@
 ( 1 1^ - ) decr ;@@
 ( 1 + ) incr ;@@
+( 0# * ) square ;@@
 ( real 1^ real =) eq ;@@
 
 (();) clear ;@@
@@ -24,19 +25,29 @@ args;
 (\args 1^ get) getA ;@@
 (\args top) topA ;@@
 
-((args 1# $; () args $;) (0# 0$^ pushA Sreverse) 2#()$= not @@) Sreverse ;@@
 reverseArgs;
 (empty not (reverseArgs @ () reverseArgs $;) (reverseArgs 1^ push reverse) 2^@@) reverse ;@@
+(pushA stash topA @ reverse topA ; unstash popA) Sreverse ;@@
+
+COPY;
+(COPY; COPY@ COPY@) copy ;@@
+(0# () pushA topA$; popA) Scopy ;@@
 
 STASH;
-(STASH;) stash;@@
-(STASH@) unstash;@@
+(() 0# pushA; STASH popA push) stash;@@
+(STASH pop @) unstash;@@
 
-mapArgs;
-(pushA empty not (popA _) (topA @ mapArgs 1^ push popA map mapArgs pop) 2^@@) map ;@@
+(pushA empty not (popA _) (topA @ popA 1^ pushA map popA) 2^@@) map ;@@
 (pushA pushA stash topA @ 1 getA map topA ; unstash popA popA _) Smap ;@@
 
 (pushA size 1 = not (popA _) (topA @ popA reduce) 2^@@) reduce ;@@
 (pushA pushA stash popA @ popA reduce pushA unstash popA) Sreduce ;@@
 
-((__) (decr pushA 0# pushA @ popA popA repeat) 2#0<@@) repeat ;@@
+(pushA pushA 1 getA @ (popA popA _ _) (topA@ popA popA while) 2^@@) while ;@@
+(0#0< (_ _ () pushA) (decr 1# pushA repeat) 2^@@ popA @) repeat ;@@
+
+STR;
+((`_) (0# '\0' = not) while) printStr ;@@
+((STR 1^ push) (0# '\0' = not) while STR Sreverse @ '\0' STR@ ()STR $;) dupStr ;@@
+(1 (incr 1^_) (1# '\0' = not) 1^ while) lengthStr ;@@
+((STR 1^ push) (0# '\0' = not) while _ STR Sreverse @ STR@ ()STR $;) appendStr ;@@
