@@ -47,7 +47,8 @@ STASH;
 (0#0< (_ _ () pushA) (decr 1# pushA repeat) 2^@@ popA @) repeat ;@@
 
 STR;
-((`_) (0# '\0' = not) while) printStr ;@@
+((`_) (0# '\0' = not) while _) print ;@@
+((`_) (0# '\0' = not) while _ '\n' `_) println ;@@
 ((STR 1^ push) (0# '\0' = not) while STR Sreverse @ '\0' STR@ ()STR $;) dupStr ;@@
 (1 (incr 1^_) (1# '\0' = not) 1^ while) lengthStr ;@@
 ((STR 1^ push) (0# '\0' = not) while _ STR Sreverse @ STR@ ()STR $;) appendStr ;@@
