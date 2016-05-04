@@ -39,9 +39,10 @@ package object Interpreter {
     "$`"    -> stackOp("show"),
     "$_"    -> stackOp("discard"),
     "$="    -> stackOp("equal"),
-    "$;@@"  -> stackOp("funCap"),
-    "$;@"   -> stackOp("valCap"),
+    "$$"    -> stackOp("env"),
     "$;"    -> stackOp("cap"),
+    "$;@"   -> stackOp("valCap"),
+    "$;@@"  -> stackOp("funCap"),
     "="     -> basicOp("equal"),
     ">"     -> basicOp("greater"),
     "<"     -> basicOp("less"),
@@ -198,7 +199,6 @@ package object Interpreter {
           val name = evalStack.pop match { case word(x) => x case escword(x) => x }
           if (! (envStacks contains name)) envStacks put (name, ArrayBuffer[Token]())
           envStacks(name).insert(envStacks(name).pos(n)+1, a)
-
         case "show"    =>
           val name = evalStack.last match { case word(x) => x case escword(x) => x }
           envStacks(name).foreach( i => print(i + " ") )
@@ -209,6 +209,8 @@ package object Interpreter {
             valNames -= name
           if (funNames contains name)
             funNames -= name
+        case "env" =>
+          envStacks foreach {case (k,v) => if (k forall (! _.isDigit)) println(k)}
         case "cap"     =>
           val name = evalStack.pop match { case word(x) => x case escword(x) => x }
           val copyName = evalStack.pop match { case word(x) => x case escword(x) => x }
