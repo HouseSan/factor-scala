@@ -81,8 +81,8 @@ package object Interpreter {
   val charR    = Lexic("""'(\\x[\da-fA-F]+|\\.|[^\\])'(.*)""".r,       {x => Some(char(parseChar(x)))})
   val realR    = Lexic("""(-?\d+\.\d+)(.*)""".r, {x => Some(real(x.toDouble))})
   val intR     = Lexic("""(-?\d+)(.*)""".r,      {x => Some(num(x.toInt))})
-  val wordR    = Lexic("""(\w+)(.*)""".r,        {x => Some( if (wordOpsMap contains x) fiop(wordOpsMap(x)) else word(x))})
-  val escwordR = Lexic("""\\([a-zA-Z_]\w*)(.*)""".r,      {x => Some(escword(x))})
+  val wordR    = Lexic("""([$a-zA-Z]\w*)(.*)""".r,        {x => Some( if (wordOpsMap contains x) fiop(wordOpsMap(x)) else word(x))})
+  val escwordR = Lexic("""\\([$a-zA-Z]\w*)(.*)""".r,      {x => Some(escword(x))})
 
   val lexicList =
     List(commentR, wSpaceR, charR, realR, intR) ++
