@@ -1,64 +1,59 @@
-( _ ) false ;@
-( 1 ^ _ ) true ;@
-( false = ) not ;@@
-( ( _ false ) ( ) 2 ^ @ @ ) and ;@@
-( ( ) ( _ true ) 2 ^ @ @ ) or ;@@
-( ( ) ( not ) 2 ^ @ @ ) xor ;@@
+(_) \false $;
+(1^ _) \true $;
+(\false =) \not $;
+((_ \false) () 2^@@) \and $;
+(() (_ \true) 2^@@) \or $;
+(() (not) 2^@@) \xor $;
 
-( 0 - ) neg ;@@
-( 1 1^ - ) decr ;@@
-( 1 + ) incr ;@@
-( 0# * ) square ;@@
-( real 1^ real =) eq ;@@
+(0-) \neg $;
+(1 1^ -) \decr $;
+(1+) \incr $;
+(0# *) \square $;
+(real 1^ real =) \eq $;
 
-(size decr #) last ;@@
-(1#1#> () (1^) 2^@@) swapMin ;@@
-(1#1#< () (1^) 2^@@) swapMax ;@@
-(1#1#< @) min ;@@
-(1#1#> @) max ;@@
-(size 1 = (min minAll) () 2^@@) minAll ;@@
-(size 1 = (max maxAll) () 2^@@) maxAll ;@@
+(size decr #) \last $;
+(1#1#> () (1^) 2^@@) \swapMin $;
+(1#1#< () (1^) 2^@@) \swapMax $;
+(1#1#< @) \min $;
+(1#1#> @) \max $;
+(size 1 = (min minAll) () 2^@@) \minAll $;
+(size 1 = (max maxAll) () 2^@@) \maxAll $;
 
-(();) clear ;@@
-(size 0 =) empty ;@@
-(pushA stash topA@ size pushA clear unstash popA popA 1^) Ssize ;@@
+(();) \clear $;
+(size 0 =) \empty $;
+(pushA stash topA@ size pushA clear unstash popA popA 1^) \Ssize $;
 
-(0$~) push ;@@
-(0$^) pop ;@@
-($#) get ;@@
-(0$#) top ;@@
+(0$~) \push $;
+(0$^) \pop $;
+($#) \get $;
+(0$#) \top $;
 
-args;
-(\args 1^ push) pushA ;@@
-(\args pop) popA ;@@
-(\args 1^ get) getA ;@@
-(\args top) topA ;@@
+(\args 1^ push) \pushA $;
+(\args pop) \popA $;
+(\args 1^ get) \getA $;
+(\args top) \topA $;
 
-reverseArgs;
-(empty not (reverseArgs @ () reverseArgs $;) (reverseArgs 1^ push reverse) 2^@@) reverse ;@@
-(pushA stash topA @ reverse topA ; unstash popA) Sreverse ;@@
+(empty not (reverseArgs () \reverseArgs $;) (\reverseArgs 1^ push reverse) 2^@@) \reverse $;
+(pushA stash topA @ reverse topA ; unstash popA) \Sreverse $;
 
-COPY;
-(COPY; COPY@ COPY@) copy ;@@
-(0# () pushA topA$; popA) Scopy ;@@
+(\COPY; COPY COPY) \copy $;
+(0# () pushA topA $; popA) \Scopy $;
 
-STASH;
-(() 0# pushA; STASH popA push) stash;@@
-(STASH pop @) unstash;@@
+(() 0# pushA; \STASH popA push) \stash $;
+(\STASH pop @) \unstash $;
 
-(pushA empty not (popA _) (topA @ popA 1^ pushA map popA) 2^@@) map ;@@
-(pushA pushA stash topA @ 1 getA map topA ; unstash popA popA _) Smap ;@@
+(pushA empty not (popA _) (topA @ popA 1^ pushA map popA) 2^@@) \map $;
+(pushA pushA stash topA @ 1 getA map topA ; unstash popA popA _) \Smap $;
 
-(pushA size 1 = not (popA _) (topA @ popA reduce) 2^@@) reduce ;@@
-(pushA pushA stash popA @ popA reduce pushA unstash popA) Sreduce ;@@
+(pushA size 1 = not (popA _) (topA @ popA reduce) 2^@@) \reduce $;
+(pushA pushA stash popA @ popA reduce pushA unstash popA) \Sreduce $;
 
-(() 2^ 2^ @@) if ;@@
-(pushA pushA 1 getA @ (popA popA _ _) (topA@ popA popA while) 2^@@) while ;@@
-(0#0< (_ _ () pushA) (decr 1# pushA repeat) 2^@@ popA @) repeat ;@@
+(() 2^ 2^ @@) \if $;
+(pushA pushA 1 getA @ (popA popA _ _) (topA@ popA popA while) 2^@@) \while $;
+(0#0< (_ _ () pushA) (decr 1# pushA repeat) 2^@@ popA @) \repeat $;
 
-STR;
-((`_) (0# '\0' = not) while _) print ;@@
-(print '\n' `_) println ;@@
-((STR 1^ push) (0# '\0' = not) while STR Sreverse @ '\0' STR@ ()STR $;) dupStr ;@@
-(1 (incr 1^_) (1# '\0' = not) 1^ while) lengthStr ;@@
-((STR 1^ push) (0# '\0' = not) while _ STR Sreverse @ STR@ ()STR $;) appendStr ;@@
+((`_) (0# '\0' = not) while _) \print $;
+(print '\n' `_) \println $;
+((\STR 1^ push) (0# '\0' = not) while \STR Sreverse @ '\0' STR () \STR $;) \dupStr $;
+(1 (incr 1^_) (1# '\0' = not) 1^ while) \lengthStr $;
+((\STR 1^ push) (0# '\0' = not) while _ \STR Sreverse @ STR () \STR $;) \appendStr $;

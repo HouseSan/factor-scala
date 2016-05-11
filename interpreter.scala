@@ -30,8 +30,6 @@ package object Interpreter {
     "~"     -> coreOp("insert"),
     "`"     -> coreOp("show"),
     "_"     -> coreOp("discard"),
-    ";@@"   -> coreOp("funCap"),
-    ";@"    -> coreOp("valCap"),
     ";"     -> coreOp("cap"),
     "$#"    -> stackOp("copy"),
     "$^"    -> stackOp("cut"),
@@ -41,8 +39,6 @@ package object Interpreter {
     "$="    -> stackOp("equal"),
     "$$"    -> stackOp("env"),
     "$;"    -> stackOp("cap"),
-    "$;@"   -> stackOp("valCap"),
-    "$;@@"  -> stackOp("funCap"),
     "="     -> basicOp("equal"),
     ">"     -> basicOp("greater"),
     "<"     -> basicOp("less"),
@@ -97,8 +93,6 @@ package object Interpreter {
   var done = false
   var evalStack = ArrayBuffer[Token]()
   var envStacks = Map[String,ArrayBuffer[Token]]()
-  var valNames = Set[String]()
-  var funNames = Set[String]()
   var parenCount = 0
   var parenPos = 0
   var lambdaCount = 0
@@ -167,19 +161,9 @@ package object Interpreter {
         case "cap"     =>
           val name = evalStack.pop match { case word(x) => x case escword(x) => x }
           val copy = ArrayBuffer[Token]()
-          valNames -= name
-          funNames -= name
           evalStack.copyToBuffer(copy)
           envStacks put (name, copy)
           evalStack.clear
-        case "valCap"  =>
-          val name = evalStack.last match { case word(x) => x case escword(x) => x }
-          eval(fiop(coreOp("cap")))
-          valNames += name
-        case "funCap"  =>
-          val name = evalStack.last match { case word(x) => x case escword(x) => x }
-          eval(fiop(coreOp("cap")))
-          funNames += name
         case "size"    => eval(num(evalStack.size))
         case _         => println("????")
       }
@@ -204,29 +188,15 @@ package object Interpreter {
           envStacks(name).foreach( i => print(i + " ") )
           print('\n')
         case "discard" =>
-          val name = evalStack.pop match { case word(x) => x case escword(x) => x }
-          if (valNames contains name)
-            valNames -= name
-          if (funNames contains name)
-            funNames -= name
+          val name = evalStack.pop
         case "env" =>
           envStacks foreach {case (k,v) => if (k forall (! _.isDigit)) println(k)}
         case "cap"     =>
           val name = evalStack.pop match { case word(x) => x case escword(x) => x }
           val copyName = evalStack.pop match { case word(x) => x case escword(x) => x }
           val copy = ArrayBuffer[Token]()
-          valNames -= name
-          funNames -= name
           envStacks(copyName).copyToBuffer(copy)
           envStacks put (name, copy)
-        case "valCap"  =>
-          val name = evalStack.last match { case word(x) => x case escword(x) => x }
-          eval(fiop(stackOp("cap")))
-          valNames += name
-        case "funCap"  =>
-          val name = evalStack.last match { case word(x) => x case escword(x) => x }
-          eval(fiop(stackOp("cap")))
-          funNames += name
         case "equal"   =>
           val a = envStacks(evalStack.pop match { case word(x) => x case escword(x) => x })
           val b = envStacks(evalStack.pop match { case word(x) => x case escword(x) => x })
@@ -246,15 +216,15 @@ package object Interpreter {
         case "equal" =>
           val a = evalStack.pop
           val b = evalStack.pop
-          eval(if (a == b) word("true") else word("false"))
+          eval(if (a == b) escword("true") else escword("false"))
         case "greater" =>
           val a = evalStack.pop match { case real(x) => x case num(x) => x}
           val b = evalStack.pop match { case real(x) => x case num(x) => x}
-          eval(if (a > b) word("true") else word("false"))
+          eval(if (a > b) escword("true") else escword("false"))
         case "less" =>
           val a = evalStack.pop match { case real(x) => x case num(x) => x}
           val b = evalStack.pop match { case real(x) => x case num(x) => x}
-          eval(if (a < b) word("true") else word("false"))
+          eval(if (a < b) escword("true") else escword("false"))
         case "plus" =>
           val a = evalStack.pop
           val b = evalStack.pop
@@ -319,10 +289,8 @@ package object Interpreter {
       case char(x)    => evalStack += char(x)
       case escword(x) => evalStack += escword(x)
       case word(x)    => evalStack += word(x)
-        if (parenCount == 0) {
-          if (valNames contains x) eval(fiop(coreOp("apply")))
-          else if (funNames contains x) { eval(fiop(coreOp("apply"))); eval(fiop(coreOp("apply"))) }
-        }
+        if (parenCount == 0)
+          eval(fiop(coreOp("apply")))
 
       case fiop(lambda(x))  =>
         x match {
