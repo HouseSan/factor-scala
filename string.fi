@@ -1,0 +1,5 @@
+((`_) (0# '\0' = not) while _) \print $;
+(print '\n' `_) \println $;
+((\STR 1^ push) (0# '\0' = not) while \STR Sreverse @ '\0' STR () \STR $;) \dupStr $;
+(1 (incr 1^_) (1# '\0' = not) 1^ while) \lengthStr $;
+((\STR 1^ push) (0# '\0' = not) while _ \STR Sreverse @ STR () \STR $;) \appendStr $;

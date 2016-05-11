@@ -1,0 +1,10 @@
+(real 1^ real =) \eq $;
+
+(0-) \neg $;
+(1 1^ -) \decr $;
+(1+) \incr $;
+(0# *) \square $;
+
+(0#1< () (0# decr factorial *) 2^@@) \factorial $;
+(0 1 (1^1#+) 3^ decr repeat +) \fib $;
+(0 (0# incr) 2^ decr repeat) \range $;
